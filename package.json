@@ -1,0 +1,25 @@
+{
+  "name": "seguridad-bonaerense",
+  "version": "1.0.0",
+  "description": "Portal de noticias de seguridad de la provincia de Buenos Aires — backend Express + SQLite.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "migrar": "node -e \"require('./database/migraciones').ejecutarMigraciones(); console.log('Migraciones aplicadas correctamente.');\""
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
