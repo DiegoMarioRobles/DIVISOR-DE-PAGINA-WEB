@@ -85,6 +85,16 @@ CREATE TABLE IF NOT EXISTS logs (
   fecha TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS suscriptores (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL UNIQUE,
+  token TEXT NOT NULL UNIQUE,       -- usado en los links de confirmación y baja
+  confirmado INTEGER NOT NULL DEFAULT 0,
+  activo INTEGER NOT NULL DEFAULT 1,
+  creado_en TEXT NOT NULL DEFAULT (datetime('now')),
+  confirmado_en TEXT
+);
+
 CREATE TABLE IF NOT EXISTS usuarios (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   usuario TEXT NOT NULL UNIQUE,
@@ -160,6 +170,22 @@ alguna de las dos fuentes externas falla, esa parte viene en `null`.
 Cacheado 10 minutos en el servidor (`services/climaDolarService.js`) para
 no golpear las APIs externas (Open-Meteo y Bluelytics) en cada visita.
 
+**POST /api/suscriptores** → body `{email}`. Alta (o reactivación) de un
+suscriptor con doble opt-in: crea la fila con `confirmado=0` y manda un
+mail de confirmación vía `services/emailService.js` (Resend). Rate
+limit: 5 solicitudes / 15 min / IP. Responde siempre
+`{ ok: true, mensaje: "..." }` (nunca revela si el mail ya estaba
+registrado).
+
+**GET /api/suscriptores/confirmar?token=...** → se abre desde el link
+del mail de confirmación (no es una llamada `fetch`, el navegador
+navega directo ahí). Marca `confirmado=1` y devuelve una página HTML
+simple de confirmación.
+
+**GET /api/suscriptores/baja?token=...** → ídem, pero marca `activo=0`
+(baja de la suscripción). También se abre directo desde el link del
+mail.
+
 **GET /api/publicidades?posicion=sidebar** → publicidades activas y
 vigentes (fecha_inicio <= hoy <= fecha_fin o sin fechas) para esa posición.
 
@@ -171,7 +197,7 @@ vigentes (fecha_inicio <= hoy <= fecha_fin o sin fechas) para esa posición.
 
 - **POST /api/admin/login** — body `{usuario, password}` → `{ "token":"...", "usuario":"admin" }`. 401 si falla. Rate limit 5 intentos / 15 min / IP.
 - **GET /api/admin/verificar** → `{ "valido": true, "usuario":"admin" }` o 401.
-- **GET /api/admin/stats** → `{ hoy, semana, total, fuentesActivas, ultimaLecturaRss, ultimoResultadoRss, porDia: [{fecha,cantidad}, ...7] }`.
+- **GET /api/admin/stats** → `{ hoy, semana, total, fuentesActivas, suscriptoresActivos, ultimaLecturaRss, ultimoResultadoRss, porDia: [{fecha,cantidad}, ...7] }`.
 - **GET /api/admin/noticias?pagina=&buscar=&categoria=&fuente=** → paginado, incluye ocultas y destacadas.
 - **POST /api/admin/noticias** → crea noticia propia (`es_propia=1`, requiere `contenido_propio`).
 - **PUT /api/admin/noticias/:id** → edita.

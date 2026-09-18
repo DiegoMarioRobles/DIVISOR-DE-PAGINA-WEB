@@ -297,6 +297,7 @@ async function cargarDashboard() {
     document.getElementById('stat-semana').textContent = stats.semana ?? 0;
     document.getElementById('stat-total').textContent = stats.total ?? 0;
     document.getElementById('stat-fuentes-activas').textContent = stats.fuentesActivas ?? 0;
+    document.getElementById('stat-suscriptores').textContent = stats.suscriptoresActivos ?? 0;
     document.getElementById('dash-ultima-lectura').textContent = stats.ultimaLecturaRss ? formatearFecha(stats.ultimaLecturaRss) : 'Sin datos todavía';
     document.getElementById('dash-ultimo-resultado').textContent = stats.ultimoResultadoRss || 'Sin datos todavía';
     ultimoPorDia = Array.isArray(stats.porDia) ? stats.porDia : [];

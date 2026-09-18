@@ -253,12 +253,16 @@ router.get(
     const ultimoLogRss = db.consultarUno(
       "SELECT mensaje FROM logs WHERE tipo = 'rss' ORDER BY datetime(fecha) DESC LIMIT 1"
     );
+    const suscriptoresActivos = db.consultarUno(
+      'SELECT COUNT(*) AS total FROM suscriptores WHERE confirmado = 1 AND activo = 1'
+    ).total;
 
     res.json({
       hoy,
       semana,
       total,
       fuentesActivas,
+      suscriptoresActivos,
       ultimaLecturaRss: ultimaLecturaFila ? ultimaLecturaFila.m : null,
       ultimoResultadoRss: ultimoLogRss ? ultimoLogRss.mensaje : null,
       porDia,

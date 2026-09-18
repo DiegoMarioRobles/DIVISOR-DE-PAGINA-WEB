@@ -85,6 +85,9 @@ y completá los valores reales; `.env` nunca se sube al repositorio.
 | `NODE_ENV` | Informativo (`development` / `production`), útil para los logs. No cambia el comportamiento del servidor. | No |
 | `JWT_SECRET` | Secreto usado para firmar y verificar los tokens JWT del panel de administración. **Hay que cambiarlo por un valor largo y aleatorio antes de publicar el sitio** (`openssl rand -hex 64`). Si no se define, el servidor arranca igual con un valor de desarrollo inseguro — nunca dejarlo así en producción. | **Sí, en producción** |
 | `DB_PATH` | Ruta del archivo SQLite. Si no se define, se usa `./data.db` en la raíz del proyecto. | No |
+| `SITE_URL` | URL pública del sitio, usada para armar los links de confirmación y baja de suscripción dentro de los mails. | Sí, para que los links de los mails funcionen bien |
+| `RESEND_API_KEY` | API key de tu cuenta en [resend.com](https://resend.com), para mandar mails de suscripción. Sin esto, el sitio funciona igual pero no manda ningún mail. | Sí, para que la suscripción por mail funcione |
+| `RESEND_FROM` | Remitente de los mails (`Nombre <direccion@dominio>`). Ver la sección de suscripción por mail más abajo sobre la limitación del modo de prueba de Resend. | Sí, junto con `RESEND_API_KEY` |
 
 ## Cómo entrar al panel y cambiar la contraseña
 
@@ -139,6 +142,44 @@ que también usa `seeds/fuentes.js`):
   activa: true, // solo después de validarla
 }
 ```
+
+## Cómo activar la suscripción por mail
+
+El portal tiene un formulario (en la barra lateral) para que los
+lectores se suscriban y reciban por mail un resumen cada vez que el
+motor RSS trae noticias nuevas. Usa doble opt-in: el lector pone su
+mail, le llega un link de confirmación, y recién ahí queda suscripto.
+También puede darse de baja con un link que viene en cada mail.
+
+**Sin configurar nada, el sitio funciona igual**: el formulario existe
+y guarda el registro en la base, pero no se manda ningún mail (queda
+un aviso en los logs del servidor). Para que efectivamente lleguen los
+mails:
+
+1. Creá una cuenta gratis en [resend.com](https://resend.com) (gratis
+   hasta 3.000 mails/mes).
+2. Generá una API key en el panel de Resend.
+3. Cargá en Railway (o en tu `.env` local) las variables:
+   - `RESEND_API_KEY`: la API key que generaste.
+   - `RESEND_FROM`: por ejemplo `La Huella <noticias@tudominio.com>`.
+   - `SITE_URL`: la URL pública de tu sitio (por ejemplo
+     `https://tu-proyecto.up.railway.app`), para que los links de
+     confirmación y baja dentro de los mails apunten al lugar correcto.
+
+> ⚠️ **Importante sobre el modo de prueba de Resend**: sin verificar un
+> dominio propio en el panel de Resend, **solo podés mandar mails al
+> mismo casillero con el que te registraste** en la cuenta de Resend —
+> es una limitación de Resend, no de este código. Para mandarle mail a
+> cualquier suscriptor real (no solo a vos), tenés que verificar un
+> dominio propio en **Resend → Domains** (agregar los registros DNS que
+> te pide).
+
+**No se pudo probar el envío real de mails en el entorno donde se
+construyó este proyecto** (mismo motivo que con los feeds RSS y el
+clima/dólar: sin salida a internet). El código sigue la documentación
+pública de la API de Resend; probalo apenas cargues una API key real —
+suscribite con tu propio mail y confirmá que llega el mail de
+confirmación.
 
 ## Cómo subir a Railway, paso a paso
 
@@ -297,6 +338,16 @@ probá variantes habituales (`/feed`, `/rss`, `/rss.xml`,
 - **Ninguna fuente RSS viene verificada** (ver sección anterior): es lo
   primero que hay que validar apenas se despliegue en un entorno con
   internet real.
+- **El envío de mails (suscripción y clima/dólar) no se pudo probar en
+  vivo** durante el desarrollo, por la misma falta de salida a internet
+  del entorno. El código sigue la documentación pública de Resend,
+  Open-Meteo y Bluelytics, pero hay que confirmarlo apenas se despliegue
+  con una `RESEND_API_KEY` real (ver "Cómo activar la suscripción por
+  mail").
+- **Sin panel para gestionar suscriptores**: el dashboard muestra el
+  total de suscriptores activos, pero no hay una pantalla para ver la
+  lista completa, buscarlos o darlos de baja manualmente desde el
+  panel — se podría agregar más adelante si hace falta.
 - **Sin recuperación de contraseña por email**: si se pierde la
   contraseña del admin, hay que editar la base manualmente (ver
   solución de problemas).

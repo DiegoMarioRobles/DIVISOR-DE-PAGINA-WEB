@@ -5,9 +5,12 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const db = require('../database/db');
 const { asyncHandler, CodigoError } = require('../middleware/errores');
 const { obtenerClimaYDolar } = require('../services/climaDolarService');
+const { enviarMailConfirmacion } = require('../services/emailService');
 
 const router = express.Router();
 
@@ -39,6 +42,36 @@ function obtenerCategorias() {
 }
 
 const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer'];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function paginaHtml(titulo, mensaje) {
+  return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><title>${titulo} — La Huella</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body{font-family:system-ui,sans-serif;background:#0a0e1a;color:#f2f3f7;display:flex;
+       align-items:center;justify-content:center;min-height:100vh;margin:0;padding:1.5rem;text-align:center;}
+  .caja{max-width:420px;}
+  h1{color:#fff;font-size:1.4rem;}
+  p{color:#9aa0c0;}
+  a{color:#e0263a;font-weight:bold;}
+</style></head>
+<body><div class="caja"><h1>${titulo}</h1><p>${mensaje}</p><p><a href="/">Volver a La Huella</a></p></div></body></html>`;
+}
+
+const limitadorSuscripcion = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res) => {
+    res.status(429).json({
+      error: true,
+      mensaje: 'Demasiadas solicitudes de suscripción. Esperá unos minutos y volvé a intentar.',
+      codigo: 429,
+    });
+  },
+});
 
 function obtenerLimitePorDefecto() {
   const fila = db.consultarUno('SELECT valor FROM configuracion WHERE clave = ?', [
@@ -282,6 +315,91 @@ router.get(
     );
 
     res.json(filas);
+  })
+);
+
+// POST /api/suscriptores
+router.post(
+  '/suscriptores',
+  limitadorSuscripcion,
+  asyncHandler(async (req, res) => {
+    const cuerpo = req.body || {};
+    const email = typeof cuerpo.email === 'string' ? cuerpo.email.trim().toLowerCase() : '';
+    if (!email || email.length > 200 || !EMAIL_REGEX.test(email)) {
+      throw new CodigoError('Ingresá un email válido.', 400);
+    }
+
+    const existente = db.consultarUno('SELECT * FROM suscriptores WHERE email = ?', [email]);
+    const token = crypto.randomBytes(24).toString('hex');
+
+    if (!existente) {
+      db.ejecutar(
+        'INSERT INTO suscriptores (email, token, confirmado, activo) VALUES (?, ?, 0, 1)',
+        [email, token]
+      );
+      await enviarMailConfirmacion(email, token);
+    } else if (!existente.confirmado || !existente.activo) {
+      db.ejecutar(
+        'UPDATE suscriptores SET token = ?, confirmado = 0, activo = 1 WHERE id = ?',
+        [token, existente.id]
+      );
+      await enviarMailConfirmacion(email, token);
+    }
+    // Si ya estaba confirmado y activo no se reenvía nada (evita spam), pero
+    // la respuesta es siempre la misma para no revelar si el mail ya existía.
+
+    res.json({
+      ok: true,
+      mensaje: 'Si el mail es válido, te llegó un correo para confirmar la suscripción.',
+    });
+  })
+);
+
+// GET /api/suscriptores/confirmar?token=...  (se abre desde el link del mail)
+router.get(
+  '/suscriptores/confirmar',
+  asyncHandler(async (req, res) => {
+    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    const fila = token ? db.consultarUno('SELECT * FROM suscriptores WHERE token = ?', [token]) : null;
+
+    if (!fila) {
+      res
+        .status(404)
+        .type('html')
+        .send(paginaHtml('Link inválido', 'Este link de confirmación no es válido o ya venció.'));
+      return;
+    }
+
+    if (!fila.confirmado) {
+      db.ejecutar(
+        "UPDATE suscriptores SET confirmado = 1, confirmado_en = datetime('now') WHERE id = ?",
+        [fila.id]
+      );
+    }
+
+    res
+      .type('html')
+      .send(paginaHtml('¡Listo!', 'Tu suscripción quedó confirmada. Ya vas a recibir las noticias nuevas por mail.'));
+  })
+);
+
+// GET /api/suscriptores/baja?token=...  (se abre desde el link del mail)
+router.get(
+  '/suscriptores/baja',
+  asyncHandler(async (req, res) => {
+    const token = typeof req.query.token === 'string' ? req.query.token : '';
+    const fila = token ? db.consultarUno('SELECT * FROM suscriptores WHERE token = ?', [token]) : null;
+
+    if (!fila) {
+      res.status(404).type('html').send(paginaHtml('Link inválido', 'Este link de baja no es válido.'));
+      return;
+    }
+
+    db.ejecutar('UPDATE suscriptores SET activo = 0 WHERE id = ?', [fila.id]);
+
+    res
+      .type('html')
+      .send(paginaHtml('Listo', 'Te diste de baja correctamente. Ya no vas a recibir más mails de novedades.'));
   })
 );
 

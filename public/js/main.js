@@ -48,6 +48,9 @@
   var elLogoInicio = document.getElementById('logo-inicio');
   var elTickerClima = document.getElementById('ticker-clima');
   var elTickerDolar = document.getElementById('ticker-dolar');
+  var elFormSuscripcion = document.getElementById('form-suscripcion');
+  var elInputSuscripcionEmail = document.getElementById('input-suscripcion-email');
+  var elSuscripcionMensaje = document.getElementById('suscripcion-mensaje');
 
   // ------------------------------------------------------------------
   // Utilidades generales
@@ -774,6 +777,50 @@
   }
 
   // ------------------------------------------------------------------
+  // Suscripción por mail
+  // ------------------------------------------------------------------
+
+  function mostrarMensajeSuscripcion(tipo, texto) {
+    if (!elSuscripcionMensaje) return;
+    elSuscripcionMensaje.hidden = false;
+    elSuscripcionMensaje.textContent = texto;
+    elSuscripcionMensaje.className = 'suscripcion-mensaje' + (tipo ? ' ' + tipo : '');
+  }
+
+  function configurarSuscripcion() {
+    if (!elFormSuscripcion || !elInputSuscripcionEmail) {
+      return;
+    }
+    elFormSuscripcion.addEventListener('submit', function (evento) {
+      evento.preventDefault();
+      var email = elInputSuscripcionEmail.value.trim();
+      if (!email) {
+        mostrarMensajeSuscripcion('error', 'Ingresá tu email.');
+        return;
+      }
+
+      var boton = elFormSuscripcion.querySelector('.suscripcion-boton');
+      if (boton) boton.disabled = true;
+
+      obtenerJSON('/api/suscriptores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      })
+        .then(function (respuesta) {
+          mostrarMensajeSuscripcion('exito', (respuesta && respuesta.mensaje) || 'Revisá tu mail para confirmar.');
+          elInputSuscripcionEmail.value = '';
+        })
+        .catch(function (error) {
+          mostrarMensajeSuscripcion('error', error.message || 'No pudimos completar la suscripción.');
+        })
+        .then(function () {
+          if (boton) boton.disabled = false;
+        });
+    });
+  }
+
+  // ------------------------------------------------------------------
   // Logo / botón de inicio: reinicia filtros y vuelve al listado general
   // ------------------------------------------------------------------
 
@@ -815,6 +862,7 @@
 
     configurarBusqueda();
     configurarLogo();
+    configurarSuscripcion();
   }
 
   iniciar();

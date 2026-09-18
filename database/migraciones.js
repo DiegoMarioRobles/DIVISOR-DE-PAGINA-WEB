@@ -94,6 +94,16 @@ const SENTENCIAS_TABLAS = [
     ultimo_acceso TEXT,
     creado_en TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+
+  `CREATE TABLE IF NOT EXISTS suscriptores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    token TEXT NOT NULL UNIQUE,
+    confirmado INTEGER NOT NULL DEFAULT 0,
+    activo INTEGER NOT NULL DEFAULT 1,
+    creado_en TEXT NOT NULL DEFAULT (datetime('now')),
+    confirmado_en TEXT
+  )`,
 ];
 
 // Valores por defecto de la tabla "configuracion" (CONTRATO.md, sección 1).

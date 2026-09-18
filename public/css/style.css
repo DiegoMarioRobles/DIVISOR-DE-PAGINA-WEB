@@ -646,6 +646,65 @@ button {
   text-decoration: underline;
 }
 
+.suscripcion-texto {
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+  margin-bottom: 0.75rem;
+}
+
+.suscripcion-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.suscripcion-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid var(--color-tarjeta-borde);
+  border-radius: var(--radio-borde);
+  padding: 0.5rem 0.65rem;
+  background: var(--color-fondo-elevado);
+  color: var(--color-texto);
+}
+
+.suscripcion-input::placeholder {
+  color: var(--color-texto-suave);
+}
+
+.suscripcion-boton {
+  flex: 0 0 auto;
+  border: none;
+  border-radius: var(--radio-borde);
+  background: var(--color-acento);
+  color: var(--color-blanco);
+  font-weight: 700;
+  padding: 0.5rem 0.9rem;
+}
+
+.suscripcion-boton:hover:not(:disabled) {
+  background: var(--color-acento-oscuro);
+}
+
+.suscripcion-boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.suscripcion-mensaje {
+  margin-top: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
+.suscripcion-mensaje.exito {
+  color: #7fd97f;
+}
+
+.suscripcion-mensaje.error {
+  color: var(--color-acento);
+  font-weight: 600;
+}
+
 .publicidades-sidebar {
   display: flex;
   flex-direction: column;

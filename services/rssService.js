@@ -23,6 +23,7 @@
 const Parser = require('rss-parser');
 const db = require('../database/db');
 const categorizador = require('./categorizador');
+const { enviarResumenNuevasNoticias } = require('./emailService');
 
 // Identificación del bot en las peticiones HTTP, para que los medios que
 // leemos puedan reconocer de dónde viene el tráfico.
@@ -224,15 +225,15 @@ function obtenerLink(item) {
  *
  * @param {Object} item - item ya parseado por rss-parser.
  * @param {Object} fuente - fila de la tabla `fuentes` (id, nombre, ...).
- * @returns {boolean} true si se insertó una noticia nueva, false si se
+ * @returns {number|null} el id de la noticia insertada, o null si se
  *   descartó (sin link válido o ya existente).
  */
 function procesarItem(item, fuente) {
   const link = obtenerLink(item);
-  if (!link) return false;
+  if (!link) return null;
 
   const existente = db.consultarUno('SELECT id FROM noticias WHERE link_original = ?', [link]);
-  if (existente) return false;
+  if (existente) return null;
 
   const titulo = limpiarTexto(item.title) || '(sin título)';
   const resumen = extraerResumen(item);
@@ -240,14 +241,14 @@ function procesarItem(item, fuente) {
   const fechaPublicacion = extraerFecha(item);
   const categoria = categorizador.categorizar(titulo, resumen);
 
-  db.ejecutar(
+  const resultado = db.ejecutar(
     `INSERT INTO noticias
        (titulo, resumen, contenido_propio, imagen_url, link_original, fecha_publicacion, fuente_id, fuente_nombre, categoria, es_propia)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
     [titulo, resumen, null, imagenUrl, link, fechaPublicacion, fuente.id, fuente.nombre, categoria]
   );
 
-  return true;
+  return resultado.lastInsertRowid;
 }
 
 /**
@@ -259,7 +260,7 @@ function procesarItem(item, fuente) {
  * fuentes.
  *
  * @param {Object} fuente - fila de la tabla `fuentes`.
- * @returns {Promise<{noticiasNuevas: number, error: string|null}>}
+ * @returns {Promise<{noticiasNuevas: number, error: string|null, idsNuevos: number[]}>}
  */
 async function procesarFuente(fuente) {
   let feed;
@@ -281,16 +282,17 @@ async function procesarFuente(fuente) {
       // error original ni frenar el resto del proceso.
       console.error('[rssService] No se pudo registrar el error en la base:', mensajeDeError(errRegistro));
     }
-    return { noticiasNuevas: 0, error: mensaje };
+    return { noticiasNuevas: 0, error: mensaje, idsNuevos: [] };
   }
 
-  let noticiasNuevas = 0;
+  const idsNuevos = [];
   const items = Array.isArray(feed.items) ? feed.items : [];
 
   for (const item of items) {
     try {
-      if (procesarItem(item, fuente)) {
-        noticiasNuevas += 1;
+      const id = procesarItem(item, fuente);
+      if (id) {
+        idsNuevos.push(id);
       }
     } catch (errItem) {
       // Un item individual mal formado no debe frenar el resto del feed.
@@ -300,6 +302,8 @@ async function procesarFuente(fuente) {
       );
     }
   }
+
+  const noticiasNuevas = idsNuevos.length;
 
   try {
     db.ejecutar(
@@ -318,7 +322,21 @@ async function procesarFuente(fuente) {
     console.error('[rssService] No se pudo registrar el resultado en la base:', mensajeDeError(errRegistro));
   }
 
-  return { noticiasNuevas, error: null };
+  return { noticiasNuevas, error: null, idsNuevos };
+}
+
+/**
+ * Manda el resumen por mail de las noticias nuevas de esta corrida, sin
+ * dejar que un fallo de envío rompa el resultado de la lectura RSS.
+ * @param {number[]} idsNuevos
+ */
+async function avisarSuscriptoresSiHayNovedades(idsNuevos) {
+  if (idsNuevos.length === 0) return;
+  try {
+    await enviarResumenNuevasNoticias(idsNuevos);
+  } catch (err) {
+    console.error('[rssService] No se pudo enviar el resumen a suscriptores:', mensajeDeError(err));
+  }
 }
 
 /**
@@ -339,15 +357,19 @@ async function actualizarTodas() {
   let fuentesLeidas = 0;
   let noticiasNuevas = 0;
   const errores = [];
+  const idsNuevos = [];
 
   for (const fuente of fuentes) {
     const resultado = await procesarFuente(fuente);
     fuentesLeidas += 1;
     noticiasNuevas += resultado.noticiasNuevas;
+    idsNuevos.push(...resultado.idsNuevos);
     if (resultado.error) {
       errores.push({ fuente: fuente.nombre, error: resultado.error });
     }
   }
+
+  await avisarSuscriptoresSiHayNovedades(idsNuevos);
 
   return { fuentesLeidas, noticiasNuevas, errores };
 }
@@ -369,7 +391,9 @@ async function actualizarFuente(fuenteId) {
     return { noticiasNuevas: 0, error: 'No existe una fuente con ese id.' };
   }
 
-  return procesarFuente(fuente);
+  const resultado = await procesarFuente(fuente);
+  await avisarSuscriptoresSiHayNovedades(resultado.idsNuevos);
+  return { noticiasNuevas: resultado.noticiasNuevas, error: resultado.error };
 }
 
 /**

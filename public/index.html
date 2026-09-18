@@ -85,6 +85,24 @@
       </section>
 
       <aside class="sidebar" aria-label="Barra lateral">
+        <section class="sidebar-bloque sidebar-suscripcion" aria-labelledby="titulo-suscripcion">
+          <h2 id="titulo-suscripcion" class="sidebar-titulo">Recibí las noticias por mail</h2>
+          <p class="suscripcion-texto">Enterate apenas publicamos algo nuevo, directo en tu casilla.</p>
+          <form id="form-suscripcion" class="suscripcion-form" novalidate>
+            <label for="input-suscripcion-email" class="sr-only">Tu email</label>
+            <input
+              type="email"
+              id="input-suscripcion-email"
+              name="email"
+              class="suscripcion-input"
+              placeholder="tu@email.com"
+              maxlength="200"
+              required>
+            <button type="submit" class="suscripcion-boton">Suscribirme</button>
+          </form>
+          <p id="suscripcion-mensaje" class="suscripcion-mensaje" hidden></p>
+        </section>
+
         <section class="sidebar-bloque" aria-labelledby="titulo-ultimas">
           <h2 id="titulo-ultimas" class="sidebar-titulo">Últimas noticias</h2>
           <ul id="lista-ultimas" class="lista-compacta">
