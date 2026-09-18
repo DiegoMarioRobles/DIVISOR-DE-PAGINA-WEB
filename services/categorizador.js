@@ -14,31 +14,51 @@
 
 // Lista fija y ordenada de categorías posibles. 'General' es la categoría
 // de reserva cuando el texto no matchea ninguna palabra clave.
+//
+// 'Detenciones' se eliminó como categoría propia (a pedido del
+// administrador): sus palabras clave se fusionaron dentro de
+// 'Policía Bonaerense', ya que un arresto/allanamiento es, en la
+// práctica, una acción policial.
 const CATEGORIAS = [
   'Policía Bonaerense',
   'Narcotráfico',
   'Accidentes',
-  'Detenciones',
   'Seguridad Vial',
   'Justicia',
   'General',
 ];
 
-// Palabras clave por categoría. Se escriben tal como las pidió el
-// coordinador; se normalizan (minúsculas, sin acentos) una sola vez al
+// Palabras clave por categoría, normalizadas (minúsculas, sin acentos) al
 // cargar el módulo, con la misma función que se usa para normalizar el
 // texto de cada noticia, así la comparación es siempre consistente.
+//
+// ⚠️ 'bonaerense' y 'agente' (sueltas) se sacaron de acá a propósito: son
+// demasiado genéricas para un feed de noticias regionales de la
+// provincia de Buenos Aires — aparecen en cualquier nota sobre economía,
+// política o sociedad ("el gobierno bonaerense", "un agente inmobiliario",
+// etc.), no solo en policiales. Con esas dos palabras sueltas, casi
+// cualquier noticia terminaba categorizada como "Policía Bonaerense" sin
+// tener nada que ver, y por eso todas las secciones del portal se veían
+// iguales. Se mantiene la frase compuesta "policía bonaerense", que sí es
+// específica.
 const PALABRAS_CLAVE = {
   'Policía Bonaerense': [
+    'policía bonaerense',
     'policía',
     'policial',
-    'bonaerense',
     'comisaría',
     'efectivo policial',
     'patrullero',
     'uniformado',
-    'agente',
     'destacamento',
+    // Fusionadas desde la ex categoría "Detenciones":
+    'detenido',
+    'detención',
+    'arresto',
+    'aprehendido',
+    'capturado',
+    'prófugo',
+    'allanamiento',
   ],
   'Narcotráfico': [
     'droga',
@@ -60,19 +80,10 @@ const PALABRAS_CLAVE = {
     'atropelló',
     'despiste',
   ],
-  Detenciones: [
-    'detenido',
-    'detención',
-    'arresto',
-    'aprehendido',
-    'capturado',
-    'prófugo',
-    'allanamiento',
-  ],
   'Seguridad Vial': [
     'tránsito',
     'multa',
-    'licencia',
+    'licencia de conducir',
     'alcoholemia',
     'control vehicular',
     'scoring',

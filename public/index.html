@@ -23,40 +23,49 @@
 
   <header class="site-header" id="encabezado">
     <div class="site-header-hero">
-      <div class="site-header-fila">
-        <button type="button" id="logo-inicio" class="logo-link" aria-label="Ir al inicio de La Huella">
-          <span class="logo-texto">La Huella</span>
-          <svg class="logo-icono" aria-hidden="true" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M12 11c0 3-1 5.5-2.5 7.5M12 11c0-1.7 1.3-3 3-3s3 1.3 3 3c0 3.5-1.2 6.5-3 9M12 11c0-2.8-2.2-5-5-5M9.5 18.5c1-1.7 1.5-3.7 1.5-6.5M6.5 4C8 2.7 10 2 12 2s4 .7 5.5 2M4.5 7C5.8 5 8.7 3.5 12 3.5S18.2 5 19.5 7M3 11c0-1.6.3-3.1.9-4.5M21 11c0-1.6-.3-3.1-.9-4.5M5 15c-.5-1.3-.8-2.7-.8-4M19.8 15c.5-1.3.8-2.7.8-4"/>
-          </svg>
-        </button>
-
-        <form id="form-busqueda" class="buscador-form" role="search" autocomplete="off">
-          <label for="input-busqueda" class="sr-only">Buscar noticias</label>
-          <input
-            type="search"
-            id="input-busqueda"
-            name="q"
-            class="buscador-input"
-            placeholder="Buscar noticias..."
-            maxlength="120">
-          <button type="submit" class="buscador-boton" aria-label="Buscar">
-            <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="7"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <span class="sr-only">Buscar</span>
-          </button>
-        </form>
-      </div>
+      <button type="button" id="logo-inicio" class="logo-link" aria-label="Ir al inicio de La Huella">
+        <svg class="logo-icono" aria-hidden="true" viewBox="0 0 100 100" width="44" height="44" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round">
+          <defs>
+            <clipPath id="recorteHuella">
+              <rect x="0" y="0" width="100" height="80" />
+            </clipPath>
+          </defs>
+          <g clip-path="url(#recorteHuella)">
+            <ellipse cx="50" cy="46" rx="34" ry="36" />
+            <ellipse cx="50" cy="46" rx="26" ry="28" />
+            <ellipse cx="50" cy="46" rx="18" ry="20" />
+            <ellipse cx="50" cy="46" rx="10" ry="12" />
+          </g>
+          <path d="M50 78 L50 92" />
+        </svg>
+        <span class="logo-texto">La Huella</span>
+      </button>
     </div>
 
-    <div class="ticker-bar" id="ticker-bar" aria-label="Fecha, clima y cotización del dólar">
+    <div class="ticker-bar" id="ticker-bar" aria-label="Fecha, clima, cotización del dólar y buscador">
       <span class="ticker-item ticker-fecha">
         <time id="reloj" datetime=""></time>
       </span>
       <span class="ticker-item ticker-clima" id="ticker-clima" hidden></span>
       <span class="ticker-item ticker-dolar" id="ticker-dolar" hidden></span>
+
+      <form id="form-busqueda" class="buscador-form" role="search" autocomplete="off">
+        <label for="input-busqueda" class="sr-only">Buscar noticias</label>
+        <input
+          type="search"
+          id="input-busqueda"
+          name="q"
+          class="buscador-input"
+          placeholder="Buscar noticias..."
+          maxlength="120">
+        <button type="submit" class="buscador-boton" aria-label="Buscar">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="sr-only">Buscar</span>
+        </button>
+      </form>
     </div>
   </header>
 

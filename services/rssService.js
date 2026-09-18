@@ -40,6 +40,10 @@ const TIMEOUT_VALIDACION_MS = 7000;
 // Longitud máxima del resumen guardado, en caracteres.
 const MAX_LARGO_RESUMEN = 300;
 
+// Timeout para el pedido de respaldo que busca la imagen de portada
+// directamente en la página del artículo (ver `obtenerImagenDesdeArticulo`).
+const TIMEOUT_IMAGEN_MS = 6000;
+
 // Campos de espacio de nombres "media" (media:content / media:thumbnail)
 // que rss-parser no interpreta por defecto: hay que pedirlos explícitamente
 // como "customFields" para poder usarlos como fuente de imagen.
@@ -184,6 +188,50 @@ function extraerImagen(item) {
 }
 
 /**
+ * Respaldo para cuando el feed RSS no trae ninguna imagen utilizable
+ * (muy común en feeds de WordPress con el modo "resumen" activado, que
+ * no incluyen imagen en el XML): pide la página del artículo original y
+ * lee únicamente la meta tag `og:image` (o `twitter:image` si no hay
+ * `og:image`) de su `<head>`.
+ *
+ * Respeta la regla legal del portal: no se guarda ni se muestra nada
+ * del cuerpo de la nota, solo la URL de la imagen de portada que el
+ * propio medio publica para que las redes sociales la usen al
+ * compartir el link (exactamente el mismo dato que lee cualquier
+ * generador de vista previa de link). El HTML de la página se descarta
+ * apenas se extrae esa URL.
+ *
+ * @param {string} link
+ * @returns {Promise<string|null>}
+ */
+async function obtenerImagenDesdeArticulo(link) {
+  if (!link) return null;
+  try {
+    const controlador = new AbortController();
+    const temporizador = setTimeout(() => controlador.abort(), TIMEOUT_IMAGEN_MS);
+    let respuesta;
+    try {
+      respuesta = await fetch(link, {
+        signal: controlador.signal,
+        headers: { 'User-Agent': USER_AGENT },
+      });
+    } finally {
+      clearTimeout(temporizador);
+    }
+    if (!respuesta.ok) return null;
+
+    const html = await respuesta.text();
+    const coincidencia =
+      /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i.exec(html) ||
+      /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i.exec(html) ||
+      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i.exec(html);
+    return coincidencia ? coincidencia[1] : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+/**
  * Devuelve la fecha de publicación de un item en formato ISO 8601. Si el
  * feed no trae una fecha parseable, devuelve la fecha/hora actual.
  * @param {Object} item
@@ -225,10 +273,10 @@ function obtenerLink(item) {
  *
  * @param {Object} item - item ya parseado por rss-parser.
  * @param {Object} fuente - fila de la tabla `fuentes` (id, nombre, ...).
- * @returns {number|null} el id de la noticia insertada, o null si se
- *   descartó (sin link válido o ya existente).
+ * @returns {Promise<number|null>} el id de la noticia insertada, o null
+ *   si se descartó (sin link válido o ya existente).
  */
-function procesarItem(item, fuente) {
+async function procesarItem(item, fuente) {
   const link = obtenerLink(item);
   if (!link) return null;
 
@@ -237,9 +285,15 @@ function procesarItem(item, fuente) {
 
   const titulo = limpiarTexto(item.title) || '(sin título)';
   const resumen = extraerResumen(item);
-  const imagenUrl = extraerImagen(item);
+  let imagenUrl = extraerImagen(item);
+  if (!imagenUrl) {
+    imagenUrl = await obtenerImagenDesdeArticulo(link);
+  }
   const fechaPublicacion = extraerFecha(item);
-  const categoria = categorizador.categorizar(titulo, resumen);
+  // Si el administrador fijó una categoría para esta fuente (todas sus
+  // noticias van a esa categoría), se usa esa directamente; si no, se
+  // categoriza automáticamente por palabras clave.
+  const categoria = fuente.categoria_default || categorizador.categorizar(titulo, resumen);
 
   const resultado = db.ejecutar(
     `INSERT INTO noticias
@@ -290,7 +344,7 @@ async function procesarFuente(fuente) {
 
   for (const item of items) {
     try {
-      const id = procesarItem(item, fuente);
+      const id = await procesarItem(item, fuente);
       if (id) {
         idsNuevos.push(id);
       }

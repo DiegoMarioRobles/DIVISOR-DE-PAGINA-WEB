@@ -67,6 +67,7 @@ p { margin: 0 0 8px; }
 /* ---------- Utilidades ---------- */
 
 .texto-secundario { color: var(--texto-sec); font-size: 13px; }
+.campo-ayuda { color: var(--texto-sec); font-size: 12px; margin-top: 4px; }
 .texto-exito { color: var(--verde); font-weight: 600; }
 .texto-error { color: var(--rojo); font-weight: 600; }
 .mensaje-error {

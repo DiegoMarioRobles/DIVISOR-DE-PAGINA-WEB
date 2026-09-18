@@ -14,7 +14,6 @@
     'Policía Bonaerense',
     'Narcotráfico',
     'Accidentes',
-    'Detenciones',
     'Seguridad Vial',
     'Justicia',
     'General'
@@ -402,26 +401,31 @@
       return;
     }
     vaciar(elSeccionDestacada);
-    var esqueleto = document.createElement('div');
-    esqueleto.className = 'tarjeta-skeleton tarjeta-skeleton-destacada';
-    esqueleto.setAttribute('aria-hidden', 'true');
-    var imagenEsqueleto = document.createElement('div');
-    imagenEsqueleto.className = 'skeleton skeleton-imagen';
-    esqueleto.appendChild(imagenEsqueleto);
-    elSeccionDestacada.appendChild(esqueleto);
+    elSeccionDestacada.classList.add('destacadas-grid');
+    for (var i = 0; i < 3; i++) {
+      var esqueleto = document.createElement('div');
+      esqueleto.className = 'tarjeta-skeleton tarjeta-skeleton-destacada';
+      esqueleto.setAttribute('aria-hidden', 'true');
+      var imagenEsqueleto = document.createElement('div');
+      imagenEsqueleto.className = 'skeleton skeleton-imagen';
+      esqueleto.appendChild(imagenEsqueleto);
+      elSeccionDestacada.appendChild(esqueleto);
+    }
 
     obtenerJSON('/api/noticias/destacada')
-      .then(function (destacada) {
+      .then(function (destacadas) {
         vaciar(elSeccionDestacada);
-        if (!destacada) {
+        if (!Array.isArray(destacadas) || destacadas.length === 0) {
           return;
         }
-        elSeccionDestacada.appendChild(crearTarjetaNoticia(destacada, true));
-        actualizarMetaOg(destacada);
+        destacadas.forEach(function (noticia) {
+          elSeccionDestacada.appendChild(crearTarjetaNoticia(noticia, true));
+        });
+        actualizarMetaOg(destacadas[0]);
       })
       .catch(function (error) {
         vaciar(elSeccionDestacada);
-        console.error('No se pudo cargar la noticia destacada.', error);
+        console.error('No se pudo cargar las noticias destacadas.', error);
       });
   }
 

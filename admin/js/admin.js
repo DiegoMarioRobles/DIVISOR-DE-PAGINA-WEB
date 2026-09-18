@@ -16,7 +16,6 @@ const CATEGORIAS = [
   'Policía Bonaerense',
   'Narcotráfico',
   'Accidentes',
-  'Detenciones',
   'Seguridad Vial',
   'Justicia',
   'General',
@@ -637,27 +636,28 @@ function renderizarPaginacion(contenedorId, paginaActual, totalPaginas, alCambia
 
 async function cargarFuentes() {
   const tbody = document.getElementById('tabla-fuentes-body');
-  tbody.innerHTML = '<tr><td colspan="7" class="celda-vacia">Cargando…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" class="celda-vacia">Cargando…</td></tr>';
   try {
     const datos = await apiFetch('/api/admin/fuentes');
     const lista = comoArreglo(datos, 'fuentes');
     cacheFuentes = new Map(lista.map((f) => [String(f.id), f]));
     renderizarFuentes(lista);
   } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="7" class="celda-vacia">Error al cargar fuentes: ${escaparHtml(err.message)}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="celda-vacia">Error al cargar fuentes: ${escaparHtml(err.message)}</td></tr>`;
   }
 }
 
 function renderizarFuentes(lista) {
   const tbody = document.getElementById('tabla-fuentes-body');
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="celda-vacia">Todavía no hay fuentes cargadas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="celda-vacia">Todavía no hay fuentes cargadas.</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map((f) => `
     <tr>
       <td>${escaparHtml(f.nombre)}</td>
       <td class="celda-url"><a href="${escaparHtml(f.url_rss)}" target="_blank" rel="noopener noreferrer">${escaparHtml(f.url_rss)}</a></td>
+      <td>${f.categoria_default ? escaparHtml(f.categoria_default) : '<span class="texto-secundario">Automático</span>'}</td>
       <td><button type="button" class="btn-toggle ${f.activa ? 'activo-si' : ''}" data-accion="activar" data-id="${f.id}">${f.activa ? '✅ Activa' : '⛔ Inactiva'}</button></td>
       <td>${f.ultima_lectura ? formatearFecha(f.ultima_lectura) : 'Nunca'}</td>
       <td>${f.total_noticias ?? 0}</td>
@@ -737,6 +737,7 @@ function abrirModalFuente(fuente) {
   document.getElementById('fuente-nombre').value = fuente ? fuente.nombre : '';
   document.getElementById('fuente-url').value = fuente ? fuente.url_rss : '';
   document.getElementById('fuente-sitio').value = fuente ? (fuente.sitio_web || '') : '';
+  document.getElementById('fuente-categoria').value = fuente ? (fuente.categoria_default || '') : '';
   document.getElementById('resultado-validacion').innerHTML = '';
   document.getElementById('grupo-guardar-sin-validar').classList.add('oculta');
   document.getElementById('chk-guardar-sin-validar').checked = false;
@@ -810,6 +811,7 @@ async function manejarEnvioFuente(evento) {
     nombre: document.getElementById('fuente-nombre').value.trim(),
     url_rss: document.getElementById('fuente-url').value.trim(),
     sitio_web: document.getElementById('fuente-sitio').value.trim(),
+    categoria_default: document.getElementById('fuente-categoria').value,
   };
 
   const btn = document.getElementById('btn-guardar-fuente');

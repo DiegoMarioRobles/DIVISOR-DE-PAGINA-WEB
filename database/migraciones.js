@@ -56,7 +56,8 @@ const SENTENCIAS_TABLAS = [
     ultima_lectura TEXT,
     ultimo_error TEXT,
     total_noticias INTEGER NOT NULL DEFAULT 0,
-    creada_en TEXT NOT NULL DEFAULT (datetime('now'))
+    creada_en TEXT NOT NULL DEFAULT (datetime('now')),
+    categoria_default TEXT
   )`,
 
   `CREATE TABLE IF NOT EXISTS publicidades (
@@ -126,6 +127,23 @@ function crearTablas() {
   }
 }
 
+/**
+ * Agrega una columna a una tabla ya existente si todavía no la tiene.
+ * `CREATE TABLE IF NOT EXISTS` no le agrega columnas nuevas a una tabla
+ * que ya existía de antes (solo la crea si no existía), así que las
+ * columnas que se suman después de la primera versión del esquema
+ * necesitan este paso aparte. `tabla`/`columna`/`definicion` siempre son
+ * literales fijos del propio código (nunca datos de entrada), así que
+ * interpolarlos acá es seguro.
+ */
+function agregarColumnaSiFalta(tabla, columna, definicion) {
+  const columnas = db.consultar(`PRAGMA table_info(${tabla})`);
+  const yaExiste = columnas.some((c) => c.name === columna);
+  if (!yaExiste) {
+    db.ejecutar(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${definicion}`);
+  }
+}
+
 function sembrarUsuarioAdmin() {
   const existente = db.consultarUno('SELECT id FROM usuarios WHERE usuario = ?', ['admin']);
   if (existente) return;
@@ -177,6 +195,17 @@ function sembrarFuentes() {
 }
 
 /**
+ * La categoría "Detenciones" se eliminó (se fusionó en "Policía
+ * Bonaerense"). Reasigna cualquier noticia ya guardada con esa
+ * categoría vieja para que no quede "huérfana" (invisible desde el
+ * filtro de categorías del portal, ya que esa categoría ya no aparece
+ * en la lista).
+ */
+function reasignarCategoriaDetenciones() {
+  db.ejecutar("UPDATE noticias SET categoria = 'Policía Bonaerense' WHERE categoria = 'Detenciones'");
+}
+
+/**
  * Renombra el portal de "Seguridad Bonaerense" (nombre original del
  * proyecto) a "La Huella" en instalaciones que ya venían corriendo desde
  * antes de este cambio. Solo actualiza si el valor sigue siendo
@@ -197,10 +226,12 @@ function renombrarPortalSiSigueEnValorViejo() {
  */
 function ejecutarMigraciones() {
   crearTablas();
+  agregarColumnaSiFalta('fuentes', 'categoria_default', 'TEXT');
   sembrarUsuarioAdmin();
   sembrarConfiguracion();
   sembrarFuentes();
   renombrarPortalSiSigueEnValorViejo();
+  reasignarCategoriaDetenciones();
 }
 
 module.exports = { ejecutarMigraciones };

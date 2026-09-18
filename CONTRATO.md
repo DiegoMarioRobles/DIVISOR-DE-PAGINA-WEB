@@ -55,7 +55,8 @@ CREATE TABLE IF NOT EXISTS fuentes (
   ultima_lectura TEXT,
   ultimo_error TEXT,
   total_noticias INTEGER NOT NULL DEFAULT 0,
-  creada_en TEXT NOT NULL DEFAULT (datetime('now'))
+  creada_en TEXT NOT NULL DEFAULT (datetime('now')),
+  categoria_default TEXT  -- si está seteada, todas las noticias de esta fuente usan esta categoría en vez del categorizador automático
 );
 
 CREATE TABLE IF NOT EXISTS publicidades (
@@ -141,8 +142,11 @@ indique explícitamente abajo. Fechas siempre ISO 8601.
 }
 ```
 
-**GET /api/noticias/destacada** → una noticia (la marcada `destacada`, o la
-más reciente si ninguna está destacada) o `null` si no hay ninguna.
+**GET /api/noticias/destacada** → array de hasta 3 noticias (las marcadas
+`destacada`, completando con las más recientes si hay menos de 3
+marcadas). El panel admin permite marcar hasta 3 noticias como
+destacadas a la vez (`PATCH /api/admin/noticias/:id/destacar`); si ya
+hay 3 y se marca una cuarta, se desmarca automáticamente la más vieja.
 
 **GET /api/noticias/:id** → detalle de una noticia. Incrementa `vistas`.
 404 con el formato de error si no existe o está oculta.
@@ -205,7 +209,7 @@ vigentes (fecha_inicio <= hoy <= fecha_fin o sin fechas) para esa posición.
 - **PATCH /api/admin/noticias/:id/destacar** → alterna `destacada`.
 - **PATCH /api/admin/noticias/:id/ocultar** → alterna `oculta`.
 - **GET /api/admin/fuentes** → todas (activas e inactivas).
-- **POST /api/admin/fuentes** → crea. Body: `{nombre, url_rss, sitio_web}`.
+- **POST /api/admin/fuentes** → crea. Body: `{nombre, url_rss, sitio_web, categoria_default}` (`categoria_default` opcional; vacío/null = automático según palabras clave).
 - **PUT /api/admin/fuentes/:id** → edita.
 - **DELETE /api/admin/fuentes/:id** → elimina.
 - **POST /api/admin/fuentes/validar** → body `{url_rss}`. Intenta leer el feed con timeout corto y devuelve `{ "valido":true, "titulos":["...","...","..."] }` o `{ "valido":false, "mensaje":"..." }`. Nunca tira 500 por un feed caído.
@@ -286,7 +290,7 @@ internamente y opcionalmente A) exporta:
 ```js
 module.exports = {
   categorizar(titulo, resumen) { /* devuelve el nombre de categoría, string */ },
-  CATEGORIAS: ['Policía Bonaerense','Narcotráfico','Accidentes','Detenciones','Seguridad Vial','Justicia','General'],
+  CATEGORIAS: ['Policía Bonaerense','Narcotráfico','Accidentes','Seguridad Vial','Justicia','General'],
 };
 ```
 

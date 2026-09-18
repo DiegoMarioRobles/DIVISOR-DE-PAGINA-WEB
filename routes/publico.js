@@ -22,7 +22,6 @@ const CATEGORIAS_POR_DEFECTO = [
   'Policía Bonaerense',
   'Narcotráfico',
   'Accidentes',
-  'Detenciones',
   'Seguridad Vial',
   'Justicia',
   'General',
@@ -181,27 +180,33 @@ router.get(
   })
 );
 
-// GET /api/noticias/destacada
+// GET /api/noticias/destacada -> array de hasta MAX_DESTACADAS noticias
+const MAX_DESTACADAS = 3;
+
 router.get(
   '/noticias/destacada',
   asyncHandler(async (req, res) => {
-    let fila = db.consultarUno(
+    const marcadas = db.consultar(
       `SELECT * FROM noticias WHERE oculta = 0 AND destacada = 1
-       ORDER BY datetime(fecha_publicacion) DESC LIMIT 1`
+       ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
+      [MAX_DESTACADAS]
     );
 
-    if (!fila) {
-      fila = db.consultarUno(
-        `SELECT * FROM noticias WHERE oculta = 0
-         ORDER BY datetime(fecha_publicacion) DESC LIMIT 1`
+    let destacadas = marcadas;
+    if (destacadas.length < MAX_DESTACADAS) {
+      const idsExcluidos = destacadas.map((n) => n.id);
+      const condicionExcluir = idsExcluidos.length
+        ? `AND id NOT IN (${idsExcluidos.map(() => '?').join(',')})`
+        : '';
+      const relleno = db.consultar(
+        `SELECT * FROM noticias WHERE oculta = 0 ${condicionExcluir}
+         ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
+        [...idsExcluidos, MAX_DESTACADAS - destacadas.length]
       );
+      destacadas = destacadas.concat(relleno);
     }
 
-    if (!fila) {
-      return res.json(null);
-    }
-
-    res.json(mapearNoticiaDetalle(fila));
+    res.json(destacadas.map(mapearNoticiaDetalle));
   })
 );
 

@@ -19,7 +19,6 @@ const CATEGORIAS_POR_DEFECTO = [
   'Policía Bonaerense',
   'Narcotráfico',
   'Accidentes',
-  'Detenciones',
   'Seguridad Vial',
   'Justicia',
   'General',
@@ -108,6 +107,18 @@ function opcionalUrl(valor, nombreCampo, { maxLength = 500 } = {}) {
     throw new CodigoError(`El campo "${nombreCampo}" debe ser una URL http(s) válida.`, 400);
   }
   return limpio;
+}
+
+function validarCategoriaDefaultOpcional(valor) {
+  if (valor === undefined || valor === null || valor === '') return null;
+  const categorias = obtenerCategorias();
+  if (typeof valor !== 'string' || !categorias.includes(valor)) {
+    throw new CodigoError(
+      `La categoría fija de la fuente debe ser una de: ${categorias.join(', ')}, o vacío para automático.`,
+      400
+    );
+  }
+  return valor;
 }
 
 function validarCategoria(valor) {
@@ -485,6 +496,8 @@ router.delete(
 );
 
 // PATCH /api/admin/noticias/:id/destacar
+const MAX_DESTACADAS = 3;
+
 router.patch(
   '/noticias/:id/destacar',
   asyncHandler(async (req, res) => {
@@ -495,8 +508,19 @@ router.patch(
     const nuevoValor = fila.destacada ? 0 : 1;
 
     if (nuevoValor === 1) {
-      // Solo puede haber una noticia destacada a la vez.
-      db.ejecutar('UPDATE noticias SET destacada = 0 WHERE destacada = 1');
+      // Hasta MAX_DESTACADAS noticias pueden estar destacadas a la vez
+      // (se muestran juntas en la portada). Si ya se llegó al máximo, se
+      // desmarca la destacada más vieja (por fecha de publicación) para
+      // hacerle lugar a la nueva.
+      const marcadas = db.consultarUno('SELECT COUNT(*) AS total FROM noticias WHERE destacada = 1').total;
+      if (marcadas >= MAX_DESTACADAS) {
+        const masVieja = db.consultarUno(
+          'SELECT id FROM noticias WHERE destacada = 1 ORDER BY datetime(fecha_publicacion) ASC LIMIT 1'
+        );
+        if (masVieja) {
+          db.ejecutar('UPDATE noticias SET destacada = 0 WHERE id = ?', [masVieja.id]);
+        }
+      }
     }
     db.ejecutar('UPDATE noticias SET destacada = ? WHERE id = ?', [nuevoValor, id]);
 
@@ -536,12 +560,13 @@ router.post(
     const nombre = requerirString(cuerpo.nombre, 'nombre', { maxLength: 150 });
     const urlRss = requerirUrl(cuerpo.url_rss, 'url_rss', { maxLength: 500 });
     const sitioWeb = opcionalUrl(cuerpo.sitio_web, 'sitio_web') || null;
+    const categoriaDefault = validarCategoriaDefaultOpcional(cuerpo.categoria_default);
 
     let resultado;
     try {
       resultado = db.ejecutar(
-        'INSERT INTO fuentes (nombre, url_rss, sitio_web, activa) VALUES (?, ?, ?, 1)',
-        [nombre, urlRss, sitioWeb]
+        'INSERT INTO fuentes (nombre, url_rss, sitio_web, activa, categoria_default) VALUES (?, ?, ?, 1, ?)',
+        [nombre, urlRss, sitioWeb, categoriaDefault]
       );
     } catch (err) {
       if (esConstraintUnico(err)) {
@@ -584,6 +609,10 @@ router.put(
     if (cuerpo.activa !== undefined) {
       campos.push('activa = ?');
       valores.push(aBooleanoDB(cuerpo.activa));
+    }
+    if (cuerpo.categoria_default !== undefined) {
+      campos.push('categoria_default = ?');
+      valores.push(validarCategoriaDefaultOpcional(cuerpo.categoria_default));
     }
 
     if (campos.length === 0) {
