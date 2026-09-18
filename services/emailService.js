@@ -6,7 +6,7 @@
  *
  * Requiere las variables de entorno:
  *   RESEND_API_KEY - API key de tu cuenta de Resend.
- *   RESEND_FROM     - remitente, ej. "La Huella <noticias@tudominio.com>".
+ *   RESEND_FROM     - remitente, ej. "El Observador <noticias@tudominio.com>".
  *                      Sin un dominio propio verificado en Resend, solo se
  *                      puede mandar mail al mismo casillero con el que te
  *                      registraste en Resend (limitación de su modo sandbox,
@@ -95,7 +95,7 @@ async function enviarMailConfirmacion(email, token) {
   const urlConfirmar = `${obtenerUrlBase()}/api/suscriptores/confirmar?token=${encodeURIComponent(token)}`;
   const html = `
     <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px;background:#0a0e1a;color:#f2f3f7;">
-      <h1 style="color:#ffffff;font-size:22px;">La Huella</h1>
+      <h1 style="color:#ffffff;font-size:22px;">El Observador</h1>
       <p>Confirmá tu suscripción para recibir las noticias nuevas por mail.</p>
       <p>
         <a href="${urlConfirmar}" style="display:inline-block;background:#e0263a;color:#ffffff;
@@ -106,7 +106,7 @@ async function enviarMailConfirmacion(email, token) {
       <p style="font-size:12px;color:#9aa0c0;">Si no pediste esta suscripción, ignorá este mail.</p>
     </div>`;
 
-  return enviarCorreo({ to: email, subject: 'Confirmá tu suscripción a La Huella', html });
+  return enviarCorreo({ to: email, subject: 'Confirmá tu suscripción a El Observador', html });
 }
 
 /**
@@ -155,7 +155,7 @@ async function enviarResumenNuevasNoticias(idsNoticiasNuevas) {
       const urlBaja = `${obtenerUrlBase()}/api/suscriptores/baja?token=${encodeURIComponent(s.token)}`;
       const html = `
         <div style="font-family:system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#0a0e1a;color:#f2f3f7;">
-          <h1 style="color:#ffffff;font-size:22px;">La Huella</h1>
+          <h1 style="color:#ffffff;font-size:22px;">El Observador</h1>
           <p>Noticias nuevas de seguridad de la provincia de Buenos Aires:</p>
           <ul style="list-style:none;padding:0;">${listaHtml}</ul>
           <p style="font-size:11px;color:#676d94;margin-top:24px;">
@@ -164,7 +164,7 @@ async function enviarResumenNuevasNoticias(idsNoticiasNuevas) {
         </div>`;
       return enviarCorreo({
         to: s.email,
-        subject: `${noticias.length} noticia(s) nueva(s) en La Huella`,
+        subject: `${noticias.length} noticia(s) nueva(s) en El Observador`,
         html,
       });
     })

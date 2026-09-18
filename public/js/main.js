@@ -1,5 +1,5 @@
 /**
- * La Huella — Portal público
+ * El Observador — Portal público
  * JS vanilla, sin frameworks. Todo el contenido que viene de la API
  * (títulos, resúmenes, nombres de fuente, etc.) se inserta siempre con
  * textContent o asignando propiedades del DOM, nunca con innerHTML, porque

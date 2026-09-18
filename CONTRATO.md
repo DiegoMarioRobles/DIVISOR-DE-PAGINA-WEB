@@ -1,6 +1,6 @@
 # CONTRATO.md — Fuente única de verdad
 
-Proyecto: **Seguridad Bonaerense** — portal de noticias de seguridad de la
+Proyecto: **El Observador** — portal de noticias de seguridad de la
 provincia de Buenos Aires, Argentina.
 
 Este documento es el contrato compartido entre todos los subagentes.
@@ -110,7 +110,7 @@ Claves de `configuracion` (valores por defecto que debe insertar el seed):
 
 | clave | valor por defecto |
 |---|---|
-| nombre_portal | Seguridad Bonaerense |
+| nombre_portal | El Observador |
 | logo_url | (vacío) |
 | color_primario | #1a237e |
 | color_acento | #c62828 |

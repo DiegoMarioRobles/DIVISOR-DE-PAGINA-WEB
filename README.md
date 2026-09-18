@@ -1,4 +1,4 @@
-# La Huella
+# El Observador
 
 Portal de noticias especializado en seguridad de la provincia de Buenos
 Aires, Argentina. Agrega automáticamente noticias desde feeds RSS de
@@ -62,7 +62,7 @@ Si todo salió bien vas a ver en la consola algo como:
 
 ```
 Usuario administrador inicial creado (usuario: admin, contraseña: seguridad2024). ...
-La Huella escuchando en el puerto 3000
+El Observador escuchando en el puerto 3000
 Scheduler de RSS iniciado correctamente.
 ```
 
@@ -161,7 +161,7 @@ mails:
 2. Generá una API key en el panel de Resend.
 3. Cargá en Railway (o en tu `.env` local) las variables:
    - `RESEND_API_KEY`: la API key que generaste.
-   - `RESEND_FROM`: por ejemplo `La Huella <noticias@tudominio.com>`.
+   - `RESEND_FROM`: por ejemplo `El Observador <noticias@tudominio.com>`.
    - `SITE_URL`: la URL pública de tu sitio (por ejemplo
      `https://tu-proyecto.up.railway.app`), para que los links de
      confirmación y baja dentro de los mails apunten al lugar correcto.

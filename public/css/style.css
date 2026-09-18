@@ -1,5 +1,5 @@
 /* ============================================================
-   La Huella — Portal público
+   El Observador — Portal público
    Tema oscuro estilo "tabloid" de seguridad/policiales.
    Mobile-first: <600px 1 columna, 600-1024px 2 columnas, >1024px 3 columnas
    ============================================================ */
@@ -143,15 +143,14 @@ button {
 }
 
 .logo-texto {
-  font-size: 1.9rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   white-space: nowrap;
 }
 
 .logo-icono {
-  color: var(--color-acento);
   flex-shrink: 0;
 }
 
@@ -758,9 +757,9 @@ button {
 }
 
 .footer-nombre {
-  font-size: 1.15rem;
-  font-weight: 900;
-  text-transform: uppercase;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.2rem;
+  font-weight: 700;
   color: var(--color-blanco);
   margin-bottom: 0.4rem;
 }

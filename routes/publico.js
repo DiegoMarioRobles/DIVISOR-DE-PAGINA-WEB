@@ -45,7 +45,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function paginaHtml(titulo, mensaje) {
   return `<!DOCTYPE html>
-<html lang="es"><head><meta charset="UTF-8"><title>${titulo} — La Huella</title>
+<html lang="es"><head><meta charset="UTF-8"><title>${titulo} — El Observador</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body{font-family:system-ui,sans-serif;background:#0a0e1a;color:#f2f3f7;display:flex;
@@ -55,7 +55,7 @@ function paginaHtml(titulo, mensaje) {
   p{color:#9aa0c0;}
   a{color:#e0263a;font-weight:bold;}
 </style></head>
-<body><div class="caja"><h1>${titulo}</h1><p>${mensaje}</p><p><a href="/">Volver a La Huella</a></p></div></body></html>`;
+<body><div class="caja"><h1>${titulo}</h1><p>${mensaje}</p><p><a href="/">Volver a El Observador</a></p></div></body></html>`;
 }
 
 const limitadorSuscripcion = rateLimit({

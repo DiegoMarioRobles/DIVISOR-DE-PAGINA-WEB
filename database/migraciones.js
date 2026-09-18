@@ -109,7 +109,7 @@ const SENTENCIAS_TABLAS = [
 
 // Valores por defecto de la tabla "configuracion" (CONTRATO.md, sección 1).
 const CONFIGURACION_POR_DEFECTO = {
-  nombre_portal: 'La Huella',
+  nombre_portal: 'El Observador',
   logo_url: '',
   color_primario: '#1a237e',
   color_acento: '#c62828',
@@ -206,15 +206,16 @@ function reasignarCategoriaDetenciones() {
 }
 
 /**
- * Renombra el portal de "Seguridad Bonaerense" (nombre original del
- * proyecto) a "La Huella" en instalaciones que ya venían corriendo desde
- * antes de este cambio. Solo actualiza si el valor sigue siendo
- * exactamente el default viejo, para no pisar un nombre que el
- * administrador ya haya personalizado a mano desde el panel.
+ * Renombra el portal a "El Observador" en instalaciones que todavía
+ * tengan alguno de los nombres anteriores del proyecto ("Seguridad
+ * Bonaerense", el original, o "La Huella", el segundo). Solo actualiza
+ * si el valor sigue siendo exactamente uno de esos defaults viejos,
+ * para no pisar un nombre que el administrador ya haya personalizado
+ * a mano desde el panel.
  */
 function renombrarPortalSiSigueEnValorViejo() {
   db.ejecutar(
-    "UPDATE configuracion SET valor = 'La Huella' WHERE clave = 'nombre_portal' AND valor = 'Seguridad Bonaerense'"
+    "UPDATE configuracion SET valor = 'El Observador' WHERE clave = 'nombre_portal' AND valor IN ('Seguridad Bonaerense', 'La Huella')"
   );
 }
 
