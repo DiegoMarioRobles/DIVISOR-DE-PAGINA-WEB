@@ -18,6 +18,7 @@
 
 const bcrypt = require('bcrypt');
 const db = require('./db');
+const FUENTES_SEMILLA = require('../seeds/fuentes');
 
 const RONDAS_BCRYPT = 10;
 
@@ -143,14 +144,38 @@ function sembrarConfiguracion() {
 }
 
 /**
+ * Inserta las fuentes candidatas de seeds/fuentes.js si la tabla
+ * "fuentes" está vacía (primer arranque). Quedan tal como las dejó ese
+ * archivo: NINGUNA verificada en vivo, todas con activa=0 — el
+ * administrador debe validarlas desde el panel antes de activarlas.
+ */
+function sembrarFuentes() {
+  const totalExistente = db.consultarUno('SELECT COUNT(*) AS total FROM fuentes').total;
+  if (totalExistente > 0) return;
+
+  for (const fuente of FUENTES_SEMILLA) {
+    db.ejecutar(
+      'INSERT INTO fuentes (nombre, url_rss, sitio_web, activa) VALUES (?, ?, ?, ?)',
+      [fuente.nombre, fuente.url_rss, fuente.sitio_web || null, fuente.activa ? 1 : 0]
+    );
+  }
+  console.log(
+    `${FUENTES_SEMILLA.length} fuente(s) RSS candidata(s) cargada(s) como referencia ` +
+      '(todas inactivas: no verificadas en el entorno de desarrollo, validar antes de activar).'
+  );
+}
+
+/**
  * Crea todas las tablas (si no existen) e inserta los datos semilla
- * (usuario admin y configuración por defecto) si todavía no existen.
- * Es seguro llamarla en cada arranque del servidor: es idempotente.
+ * (usuario admin, configuración por defecto y fuentes RSS candidatas)
+ * si todavía no existen. Es seguro llamarla en cada arranque del
+ * servidor: es idempotente.
  */
 function ejecutarMigraciones() {
   crearTablas();
   sembrarUsuarioAdmin();
   sembrarConfiguracion();
+  sembrarFuentes();
 }
 
 module.exports = { ejecutarMigraciones };
