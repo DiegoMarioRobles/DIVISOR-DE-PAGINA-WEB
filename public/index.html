@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seguridad Bonaerense — Noticias de seguridad de la provincia de Buenos Aires</title>
+  <meta name="description" content="Portal de noticias de seguridad de la provincia de Buenos Aires: Policía Bonaerense, narcotráfico, accidentes, detenciones, seguridad vial y justicia, actualizado todos los días.">
+  <meta name="theme-color" content="#1a237e">
+
+  <!-- Open Graph: se completan/actualizan con datos reales cuando carga la noticia destacada -->
+  <meta property="og:title" content="Seguridad Bonaerense">
+  <meta property="og:description" content="Noticias de seguridad de la provincia de Buenos Aires, actualizadas todos los días.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="img/placeholder.svg">
+  <meta property="og:locale" content="es_AR">
+
+  <link rel="icon" href="img/placeholder.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#contenido-principal">Saltar al contenido principal</a>
+
+  <header class="site-header" id="encabezado">
+    <div class="site-header-fila">
+      <button type="button" id="logo-inicio" class="logo-link" aria-label="Ir al inicio de Seguridad Bonaerense">
+        <span class="logo-texto">Seguridad Bonaerense</span>
+      </button>
+
+      <form id="form-busqueda" class="buscador-form" role="search" autocomplete="off">
+        <label for="input-busqueda" class="sr-only">Buscar noticias</label>
+        <input
+          type="search"
+          id="input-busqueda"
+          name="q"
+          class="buscador-input"
+          placeholder="Buscar noticias..."
+          maxlength="120">
+        <button type="submit" class="buscador-boton" aria-label="Buscar">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="sr-only">Buscar</span>
+        </button>
+      </form>
+    </div>
+
+    <div class="site-header-fila site-header-fila-reloj">
+      <time id="reloj" class="reloj" datetime=""></time>
+    </div>
+  </header>
+
+  <nav class="categorias-nav" aria-label="Categorías de noticias">
+    <ul id="lista-categorias" class="categorias-lista">
+      <!-- Se completa dinámicamente vía JS con GET /api/categorias -->
+    </ul>
+  </nav>
+
+  <main id="contenido-principal">
+    <section id="seccion-destacada" class="seccion-destacada" aria-label="Noticia destacada">
+      <!-- Se completa dinámicamente vía JS con GET /api/noticias/destacada -->
+    </section>
+
+    <div class="contenido-layout">
+      <section class="columna-noticias" aria-labelledby="titulo-noticias">
+        <h1 id="titulo-noticias" class="sr-only">Últimas noticias de seguridad</h1>
+
+        <div id="grilla-noticias" class="noticias-grid" aria-live="polite" aria-busy="true">
+          <!-- Se completa dinámicamente vía JS con GET /api/noticias o GET /api/buscar -->
+        </div>
+
+        <p id="mensaje-estado" class="mensaje-estado" hidden></p>
+
+        <nav id="paginacion" class="paginacion" aria-label="Paginación de noticias"></nav>
+      </section>
+
+      <aside class="sidebar" aria-label="Barra lateral">
+        <section class="sidebar-bloque" aria-labelledby="titulo-ultimas">
+          <h2 id="titulo-ultimas" class="sidebar-titulo">Últimas noticias</h2>
+          <ul id="lista-ultimas" class="lista-compacta">
+            <!-- Se completa dinámicamente vía JS con GET /api/noticias?limite=10 -->
+          </ul>
+        </section>
+
+        <section class="sidebar-bloque" aria-labelledby="titulo-publicidad">
+          <h2 id="titulo-publicidad" class="sidebar-titulo">Publicidad</h2>
+          <div id="publicidades-sidebar" class="publicidades-sidebar">
+            <!-- Se completa dinámicamente vía JS con GET /api/publicidades?posicion=sidebar -->
+          </div>
+        </section>
+
+        <section class="sidebar-bloque" aria-labelledby="titulo-fuentes">
+          <h2 id="titulo-fuentes" class="sidebar-titulo">Nuestras fuentes</h2>
+          <ul id="lista-fuentes" class="lista-fuentes">
+            <!-- Se completa dinámicamente vía JS con GET /api/fuentes -->
+          </ul>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer" id="pie-pagina">
+    <div class="footer-contenido">
+      <div class="footer-columna footer-marca">
+        <p class="footer-nombre">Seguridad Bonaerense</p>
+        <p class="footer-descripcion">Noticias de seguridad de la provincia de Buenos Aires.</p>
+        <ul class="redes-lista" aria-label="Redes sociales">
+          <li>
+            <a href="#" aria-label="Seguinos en Facebook" class="red-social">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M13 22v-9h3l.5-4H13V6.5c0-1.2.3-2 2-2h2V1.1C16.6 1 15.4 1 14.1 1 11.2 1 9 2.7 9 6.1V9H6v4h3v9h4z"/></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" aria-label="Seguinos en X (Twitter)" class="red-social">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23.3 22h-7l-5.5-6.7L4.5 22H1.3l8.1-9.3L1 2h7.2l5 6.1L18.9 2zm-1.2 18h1.7L7.4 4H5.6l12.1 16z"/></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" aria-label="Seguinos en Instagram" class="red-social">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 2 .2 2.5.4.6.2 1 .5 1.5 1 .5.5.8.9 1 1.5.2.5.4 1.3.4 2.5.1 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 2-.4 2.5-.2.6-.5 1-1 1.5-.5.5-.9.8-1.5 1-.5.2-1.3.4-2.5.4-1.2.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-2-.2-2.5-.4-.6-.2-1-.5-1.5-1-.5-.5-.8-.9-1-1.5-.2-.5-.4-1.3-.4-2.5C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.2-2 .4-2.5.2-.6.5-1 1-1.5.5-.5.9-.8 1.5-1 .5-.2 1.3-.4 2.5-.4C9.4 2.2 9.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .1-1.6.2-1.9.3-.5.2-.8.4-1.2.8-.4.4-.6.7-.8 1.2-.1.3-.3.9-.3 1.9C3 9.5 3 9.9 3 12s0 3.5.1 4.7c.1 1 .2 1.6.3 1.9.2.5.4.8.8 1.2.4.4.7.6 1.2.8.3.1.9.3 1.9.3 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1-.1 1.6-.2 1.9-.3.5-.2.8-.4 1.2-.8.4-.4.6-.7.8-1.2.1-.3.3-.9.3-1.9.1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1-.2-1.6-.3-1.9-.2-.5-.4-.8-.8-1.2-.4-.4-.7-.6-1.2-.8-.3-.1-.9-.3-1.9-.3-1.2-.1-1.6-.1-4.7-.1zm0 4.3a4.7 4.7 0 110 9.4 4.7 4.7 0 010-9.4zm0 1.8a2.9 2.9 0 100 5.8 2.9 2.9 0 000-5.8zm5.9-2a1.1 1.1 0 11-2.2 0 1.1 1.1 0 012.2 0z"/></svg>
+            </a>
+          </li>
+          <li>
+            <a href="#" aria-label="Seguinos en YouTube" class="red-social">
+              <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M23 12s0-3.6-.5-5.3c-.3-1-1-1.8-2-2C18.9 4.2 12 4.2 12 4.2s-6.9 0-8.5.5c-1 .2-1.7 1-2 2C1 8.4 1 12 1 12s0 3.6.5 5.3c.3 1 1 1.7 2 2 1.6.5 8.5.5 8.5.5s6.9 0 8.5-.5c1-.3 1.7-1 2-2C23 15.6 23 12 23 12zM9.8 15.5v-7l6.2 3.5-6.2 3.5z"/></svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer-columna footer-legal">
+        <h2 class="footer-subtitulo">Aviso legal</h2>
+        <p id="texto-legal">Este sitio agrega y resume noticias publicadas originalmente por medios de comunicación de terceros, con fines exclusivamente informativos. Cada tarjeta enlaza directamente a la fuente original y no se reproduce el contenido completo de las notas. Todos los derechos sobre el contenido pertenecen a sus respectivos autores y medios.</p>
+      </div>
+
+      <div class="footer-columna footer-links">
+        <h2 class="footer-subtitulo">Enlaces</h2>
+        <ul class="footer-lista-links">
+          <li><a href="#">Quiénes somos</a></li>
+          <li><a href="#">Contacto</a></li>
+          <li><a href="#">Términos y condiciones</a></li>
+          <li><a href="#">Política de privacidad</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer-copy">© 2026 Seguridad Bonaerense. Todos los derechos reservados.</p>
+  </footer>
+</body>
+</html>
