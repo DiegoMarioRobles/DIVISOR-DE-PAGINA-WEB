@@ -1,20 +1,25 @@
 /* ============================================================
-   Seguridad Bonaerense — Portal público
+   La Huella — Portal público
+   Tema oscuro estilo "tabloid" de seguridad/policiales.
    Mobile-first: <600px 1 columna, 600-1024px 2 columnas, >1024px 3 columnas
    ============================================================ */
 
 :root {
-  --color-primario: #1a237e;
-  --color-primario-oscuro: #10164f;
+  --color-fondo: #0a0e1a;
+  --color-fondo-elevado: #121729;
+  --color-tarjeta: #161d33;
+  --color-tarjeta-borde: rgba(255, 255, 255, 0.08);
   --color-blanco: #ffffff;
-  --color-gris-claro: #f5f5f5;
-  --color-texto: #212121;
-  --color-acento: #c62828;
-  --color-borde: #e0e0e0;
-  --color-texto-suave: #5a5a5a;
+  --color-texto: #f2f3f7;
+  --color-texto-suave: #9aa0c0;
+  --color-primario: #5b7fff;
+  --color-primario-oscuro: #10164f;
+  --color-acento: #e0263a;
+  --color-acento-oscuro: #b91c2c;
+  --color-borde: rgba(255, 255, 255, 0.08);
   --fuente-sistema: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --radio-borde: 8px;
-  --sombra-tarjeta: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+  --sombra-tarjeta: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -30,7 +35,7 @@ body {
   margin: 0;
   font-family: var(--fuente-sistema);
   color: var(--color-texto);
-  background: var(--color-gris-claro);
+  background: var(--color-fondo);
   line-height: 1.45;
   overflow-x: hidden;
   /* Los títulos/resúmenes vienen de feeds RSS de terceros: pueden traer
@@ -88,7 +93,7 @@ button {
   left: -9999px;
   top: 0;
   z-index: 1000;
-  background: var(--color-primario);
+  background: var(--color-acento);
   color: var(--color-blanco);
   padding: 0.75rem 1.25rem;
   border-radius: 0 0 var(--radio-borde) 0;
@@ -105,20 +110,23 @@ button {
 }
 
 /* ============================================================
-   Header
+   Header: hero oscuro + ticker de fecha/clima/dólar
    ============================================================ */
 
 .site-header {
-  background: var(--color-primario);
-  color: var(--color-blanco);
-  padding: 0.85rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.site-header-hero {
+  position: relative;
+  background:
+    radial-gradient(ellipse 65% 90% at 12% 25%, rgba(224, 38, 58, 0.32), transparent 60%),
+    radial-gradient(ellipse 65% 90% at 88% 75%, rgba(26, 35, 126, 0.5), transparent 60%),
+    linear-gradient(180deg, #05060c 0%, #0a0e1a 100%);
+  padding: 1.1rem 1rem;
 }
 
 .site-header-fila {
@@ -127,10 +135,8 @@ button {
   justify-content: space-between;
   gap: 0.75rem;
   flex-wrap: wrap;
-}
-
-.site-header-fila-reloj {
-  justify-content: center;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
 .logo-link {
@@ -140,13 +146,20 @@ button {
   padding: 0.25rem 0;
   display: flex;
   align-items: center;
+  gap: 0.5rem;
 }
 
 .logo-texto {
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+}
+
+.logo-icono {
+  color: var(--color-acento);
+  flex-shrink: 0;
 }
 
 .buscador-form {
@@ -160,11 +173,16 @@ button {
 .buscador-input {
   flex: 1 1 auto;
   min-width: 0;
-  border: none;
+  border: 1px solid var(--color-tarjeta-borde);
+  border-right: none;
   border-radius: var(--radio-borde) 0 0 var(--radio-borde);
   padding: 0.55rem 0.75rem;
   color: var(--color-texto);
-  background: var(--color-blanco);
+  background: var(--color-fondo-elevado);
+}
+
+.buscador-input::placeholder {
+  color: var(--color-texto-suave);
 }
 
 .buscador-boton {
@@ -179,13 +197,34 @@ button {
 }
 
 .buscador-boton:hover {
-  background: #a41f1f;
+  background: var(--color-acento-oscuro);
 }
 
-.reloj {
-  font-size: 0.85rem;
-  color: #d7d9f5;
-  text-align: center;
+/* ---------- Ticker: fecha, clima y dólar ---------- */
+
+.ticker-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--color-fondo-elevado);
+  border-top: 1px solid var(--color-tarjeta-borde);
+  border-bottom: 1px solid var(--color-tarjeta-borde);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.ticker-item {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticker-dolar {
+  color: #7fd97f;
+  font-weight: 600;
 }
 
 /* ============================================================
@@ -193,8 +232,8 @@ button {
    ============================================================ */
 
 .categorias-nav {
-  background: var(--color-blanco);
-  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-fondo-elevado);
+  border-bottom: 1px solid var(--color-tarjeta-borde);
   position: sticky;
   top: 0;
   z-index: 40;
@@ -206,6 +245,8 @@ button {
   gap: 0.5rem;
   overflow-x: auto;
   padding: 0.6rem 1rem;
+  max-width: 1280px;
+  margin: 0 auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
 }
@@ -215,14 +256,14 @@ button {
 }
 
 .categorias-lista::-webkit-scrollbar-thumb {
-  background: var(--color-borde);
+  background: var(--color-tarjeta-borde);
   border-radius: 4px;
 }
 
 .categoria-btn {
   flex: 0 0 auto;
-  border: 1px solid var(--color-borde);
-  background: var(--color-blanco);
+  border: 1px solid var(--color-tarjeta-borde);
+  background: transparent;
   color: var(--color-texto);
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
@@ -233,12 +274,12 @@ button {
 }
 
 .categoria-btn:hover {
-  border-color: var(--color-primario);
+  border-color: var(--color-acento);
 }
 
 .categoria-btn.activa {
-  background: var(--color-primario);
-  border-color: var(--color-primario);
+  background: var(--color-acento);
+  border-color: var(--color-acento);
   color: var(--color-blanco);
 }
 
@@ -272,7 +313,8 @@ button {
 }
 
 .tarjeta-destacada {
-  background: var(--color-blanco);
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-tarjeta-borde);
   border-radius: var(--radio-borde);
   overflow: hidden;
   box-shadow: var(--sombra-tarjeta);
@@ -286,7 +328,7 @@ button {
 .tarjeta-destacada .tarjeta-imagen-wrap {
   position: relative;
   aspect-ratio: 16 / 9;
-  background: var(--color-borde);
+  background: var(--color-fondo-elevado);
 }
 
 .tarjeta-destacada .tarjeta-imagen {
@@ -314,7 +356,7 @@ button {
 }
 
 .tarjeta-destacada .tarjeta-titulo {
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   line-height: 1.25;
 }
 
@@ -333,16 +375,18 @@ button {
      intrínseco de su contenido (ej. una palabra larga sin espacios en
      el título), y termina agrandando toda la grilla. */
   min-width: 0;
-  background: var(--color-blanco);
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-tarjeta-borde);
   border-radius: var(--radio-borde);
   overflow: hidden;
   box-shadow: var(--sombra-tarjeta);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
 }
 
 .tarjeta-noticia:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.16);
+  border-color: var(--color-acento);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
 }
 
 .tarjeta-enlace {
@@ -354,7 +398,7 @@ button {
 
 .tarjeta-imagen-wrap {
   aspect-ratio: 16 / 9;
-  background: var(--color-borde);
+  background: var(--color-fondo-elevado);
   overflow: hidden;
 }
 
@@ -375,13 +419,13 @@ button {
 .tarjeta-categoria {
   align-self: flex-start;
   font-size: 0.7rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-primario);
-  background: #e8eaf6;
-  padding: 0.2rem 0.55rem;
-  border-radius: 4px;
+  letter-spacing: 0.04em;
+  color: var(--color-blanco);
+  background: var(--color-acento);
+  padding: 0.22rem 0.6rem;
+  border-radius: 3px;
 }
 
 .tarjeta-titulo {
@@ -409,7 +453,7 @@ button {
   font-size: 0.78rem;
   color: var(--color-texto-suave);
   padding-top: 0.4rem;
-  border-top: 1px solid var(--color-borde);
+  border-top: 1px solid var(--color-tarjeta-borde);
 }
 
 .tarjeta-fuente {
@@ -420,7 +464,7 @@ button {
 /* ---------- Estados: skeletons, vacío, error ---------- */
 
 .skeleton {
-  background: linear-gradient(90deg, #e0e0e0 25%, #eeeeee 50%, #e0e0e0 75%);
+  background: linear-gradient(90deg, #161d33 25%, #1e2745 50%, #161d33 75%);
   background-size: 200% 100%;
   animation: skeleton-brillo 1.4s ease-in-out infinite;
   border-radius: 4px;
@@ -432,7 +476,8 @@ button {
 }
 
 .tarjeta-skeleton {
-  background: var(--color-blanco);
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-tarjeta-borde);
   border-radius: var(--radio-borde);
   padding: 0.85rem;
   box-shadow: var(--sombra-tarjeta);
@@ -496,16 +541,16 @@ button {
 }
 
 .paginacion-btn {
-  border: 1px solid var(--color-primario);
-  background: var(--color-blanco);
-  color: var(--color-primario);
+  border: 1px solid var(--color-acento);
+  background: transparent;
+  color: var(--color-texto);
   font-weight: 700;
   padding: 0.5rem 1rem;
   border-radius: var(--radio-borde);
 }
 
 .paginacion-btn:hover:not(:disabled) {
-  background: var(--color-primario);
+  background: var(--color-acento);
   color: var(--color-blanco);
 }
 
@@ -530,7 +575,8 @@ button {
 }
 
 .sidebar-bloque {
-  background: var(--color-blanco);
+  background: var(--color-tarjeta);
+  border: 1px solid var(--color-tarjeta-borde);
   border-radius: var(--radio-borde);
   padding: 1rem;
   box-shadow: var(--sombra-tarjeta);
@@ -539,8 +585,8 @@ button {
 .sidebar-titulo {
   font-size: 1rem;
   font-weight: 800;
-  color: var(--color-primario);
-  border-bottom: 2px solid var(--color-primario);
+  color: var(--color-texto);
+  border-bottom: 2px solid var(--color-acento);
   padding-bottom: 0.5rem;
   margin-bottom: 0.75rem;
 }
@@ -561,10 +607,11 @@ button {
   font-size: 0.88rem;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--color-texto);
 }
 
 .item-compacto-enlace:hover .item-compacto-titulo {
-  color: var(--color-primario);
+  color: var(--color-acento);
   text-decoration: underline;
 }
 
@@ -575,7 +622,7 @@ button {
 
 .item-compacto:not(:last-child) {
   padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-tarjeta-borde);
 }
 
 .mensaje-vacio-compacto {
@@ -586,7 +633,8 @@ button {
 .lista-fuentes li {
   padding: 0.4rem 0;
   font-size: 0.88rem;
-  border-bottom: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  border-bottom: 1px solid var(--color-tarjeta-borde);
 }
 
 .lista-fuentes li:last-child {
@@ -594,7 +642,7 @@ button {
 }
 
 .lista-fuentes a:hover {
-  color: var(--color-primario);
+  color: var(--color-acento);
   text-decoration: underline;
 }
 
@@ -609,14 +657,14 @@ button {
   display: block;
   border-radius: 4px;
   overflow: hidden;
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--color-tarjeta-borde);
 }
 
 .publicidad-etiqueta {
   position: absolute;
   top: 0.35rem;
   right: 0.35rem;
-  background: rgba(33, 33, 33, 0.7);
+  background: rgba(0, 0, 0, 0.7);
   color: var(--color-blanco);
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -631,10 +679,11 @@ button {
    ============================================================ */
 
 .site-footer {
-  background: var(--color-primario-oscuro);
-  color: #e4e6f7;
+  background: #05060c;
+  color: #c7cbe6;
   margin-top: 2.5rem;
   padding: 2rem 1rem 1.25rem;
+  border-top: 1px solid var(--color-tarjeta-borde);
 }
 
 .footer-contenido {
@@ -647,14 +696,15 @@ button {
 
 .footer-nombre {
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 900;
+  text-transform: uppercase;
   color: var(--color-blanco);
   margin-bottom: 0.4rem;
 }
 
 .footer-descripcion {
   font-size: 0.85rem;
-  color: #c4c8ee;
+  color: #9aa0c0;
   margin-bottom: 0.9rem;
 }
 
@@ -668,7 +718,7 @@ button {
 .footer-legal p {
   font-size: 0.82rem;
   line-height: 1.5;
-  color: #c4c8ee;
+  color: #9aa0c0;
 }
 
 .footer-lista-links li {
@@ -677,7 +727,7 @@ button {
 
 .footer-lista-links a {
   font-size: 0.85rem;
-  color: #c4c8ee;
+  color: #9aa0c0;
 }
 
 .footer-lista-links a:hover {
@@ -696,7 +746,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   color: var(--color-blanco);
   transition: background 0.15s ease;
@@ -709,10 +759,10 @@ button {
 .footer-copy {
   text-align: center;
   font-size: 0.78rem;
-  color: #9aa0d6;
+  color: #676d94;
   margin-top: 1.75rem;
   padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ============================================================
@@ -724,8 +774,10 @@ button {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .site-header-fila-reloj {
-    justify-content: flex-end;
+  .ticker-bar {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
   }
 
   .footer-contenido {
@@ -738,15 +790,16 @@ button {
    ============================================================ */
 
 @media (min-width: 1025px) {
-  .site-header {
-    flex-direction: row;
-    align-items: center;
-    padding: 0.85rem 2rem;
+  .site-header-hero {
+    padding: 1.6rem 2rem;
   }
 
-  .site-header-fila-reloj {
-    order: 3;
-    margin-left: 1rem;
+  .logo-texto {
+    font-size: 2.2rem;
+  }
+
+  .ticker-bar {
+    padding: 0.5rem 2rem;
   }
 
   .categorias-lista {

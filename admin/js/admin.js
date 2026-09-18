@@ -1,7 +1,7 @@
 'use strict';
 
 /* ============================================================
-   Seguridad Bonaerense — Panel de administración
+   La Huella — Panel de administración
    JavaScript vanilla, sin frameworks, sin build step.
    Consume la API bajo /api/admin/... documentada en CONTRATO.md.
    ============================================================ */

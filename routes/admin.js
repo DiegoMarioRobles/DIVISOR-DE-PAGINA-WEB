@@ -350,7 +350,7 @@ router.post(
     const configPortal = db.consultarUno('SELECT valor FROM configuracion WHERE clave = ?', [
       'nombre_portal',
     ]);
-    const fuenteNombre = (configPortal && configPortal.valor) || 'Seguridad Bonaerense';
+    const fuenteNombre = (configPortal && configPortal.valor) || 'La Huella';
 
     // link_original es NOT NULL + UNIQUE. Para una noticia propia se usa
     // un placeholder temporal único y después se fija a "/noticia/<id>".

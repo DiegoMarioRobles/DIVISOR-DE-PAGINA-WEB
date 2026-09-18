@@ -144,6 +144,22 @@ más reciente si ninguna está destacada) o `null` si no hay ninguna.
 
 **GET /api/fuentes** → fuentes activas, solo `id, nombre, sitio_web`.
 
+**GET /api/clima-dolar** → ticker de clima (La Plata) y cotización del
+dólar, para el header del portal. Siempre responde 200 (nunca 500): si
+alguna de las dos fuentes externas falla, esa parte viene en `null`.
+```json
+{
+  "clima": { "temperatura": 18, "humedad": 60, "viento": 11 },
+  "dolar": {
+    "oficial": { "compra": 1030, "venta": 1035 },
+    "blue": { "compra": 1050, "venta": 1055 }
+  },
+  "actualizado": "2026-09-18T15:00:00.000Z"
+}
+```
+Cacheado 10 minutos en el servidor (`services/climaDolarService.js`) para
+no golpear las APIs externas (Open-Meteo y Bluelytics) en cada visita.
+
 **GET /api/publicidades?posicion=sidebar** → publicidades activas y
 vigentes (fecha_inicio <= hoy <= fecha_fin o sin fechas) para esa posición.
 

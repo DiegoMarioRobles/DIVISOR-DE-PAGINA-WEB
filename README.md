@@ -1,4 +1,4 @@
-# Seguridad Bonaerense
+# La Huella
 
 Portal de noticias especializado en seguridad de la provincia de Buenos
 Aires, Argentina. Agrega automáticamente noticias desde feeds RSS de
@@ -62,7 +62,7 @@ Si todo salió bien vas a ver en la consola algo como:
 
 ```
 Usuario administrador inicial creado (usuario: admin, contraseña: seguridad2024). ...
-Seguridad Bonaerense escuchando en el puerto 3000
+La Huella escuchando en el puerto 3000
 Scheduler de RSS iniciado correctamente.
 ```
 

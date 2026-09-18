@@ -7,6 +7,7 @@
 const express = require('express');
 const db = require('../database/db');
 const { asyncHandler, CodigoError } = require('../middleware/errores');
+const { obtenerClimaYDolar } = require('../services/climaDolarService');
 
 const router = express.Router();
 
@@ -299,6 +300,15 @@ router.post(
     }
 
     res.json({ ok: true });
+  })
+);
+
+// GET /api/clima-dolar
+router.get(
+  '/clima-dolar',
+  asyncHandler(async (req, res) => {
+    const datos = await obtenerClimaYDolar();
+    res.json(datos);
   })
 );
 

@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Punto de entrada del backend de "Seguridad Bonaerense".
+ * Punto de entrada del backend de "La Huella".
  */
 
 require('dotenv').config();
@@ -47,7 +47,7 @@ app.use('/api', (req, res) => {
 app.use(manejadorErrores);
 
 app.listen(PUERTO, () => {
-  console.log(`Seguridad Bonaerense escuchando en el puerto ${PUERTO}`);
+  console.log(`La Huella escuchando en el puerto ${PUERTO}`);
 
   // El motor de RSS lo escribe el Subagente D en paralelo. Si todavía no
   // existe cuando este servidor arranca, no es un error: se loguea una

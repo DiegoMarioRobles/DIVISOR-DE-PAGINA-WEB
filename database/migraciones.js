@@ -98,7 +98,7 @@ const SENTENCIAS_TABLAS = [
 
 // Valores por defecto de la tabla "configuracion" (CONTRATO.md, sección 1).
 const CONFIGURACION_POR_DEFECTO = {
-  nombre_portal: 'Seguridad Bonaerense',
+  nombre_portal: 'La Huella',
   logo_url: '',
   color_primario: '#1a237e',
   color_acento: '#c62828',
@@ -166,6 +166,19 @@ function sembrarFuentes() {
 }
 
 /**
+ * Renombra el portal de "Seguridad Bonaerense" (nombre original del
+ * proyecto) a "La Huella" en instalaciones que ya venían corriendo desde
+ * antes de este cambio. Solo actualiza si el valor sigue siendo
+ * exactamente el default viejo, para no pisar un nombre que el
+ * administrador ya haya personalizado a mano desde el panel.
+ */
+function renombrarPortalSiSigueEnValorViejo() {
+  db.ejecutar(
+    "UPDATE configuracion SET valor = 'La Huella' WHERE clave = 'nombre_portal' AND valor = 'Seguridad Bonaerense'"
+  );
+}
+
+/**
  * Crea todas las tablas (si no existen) e inserta los datos semilla
  * (usuario admin, configuración por defecto y fuentes RSS candidatas)
  * si todavía no existen. Es seguro llamarla en cada arranque del
@@ -176,6 +189,7 @@ function ejecutarMigraciones() {
   sembrarUsuarioAdmin();
   sembrarConfiguracion();
   sembrarFuentes();
+  renombrarPortalSiSigueEnValorViejo();
 }
 
 module.exports = { ejecutarMigraciones };

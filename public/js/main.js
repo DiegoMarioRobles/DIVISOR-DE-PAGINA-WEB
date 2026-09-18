@@ -1,5 +1,5 @@
 /**
- * Seguridad Bonaerense — Portal público
+ * La Huella — Portal público
  * JS vanilla, sin frameworks. Todo el contenido que viene de la API
  * (títulos, resúmenes, nombres de fuente, etc.) se inserta siempre con
  * textContent o asignando propiedades del DOM, nunca con innerHTML, porque
@@ -46,6 +46,8 @@
   var elFormBusqueda = document.getElementById('form-busqueda');
   var elInputBusqueda = document.getElementById('input-busqueda');
   var elLogoInicio = document.getElementById('logo-inicio');
+  var elTickerClima = document.getElementById('ticker-clima');
+  var elTickerDolar = document.getElementById('ticker-dolar');
 
   // ------------------------------------------------------------------
   // Utilidades generales
@@ -184,8 +186,46 @@
       textoFecha = ahora.toDateString();
       textoHora = ahora.toTimeString();
     }
-    elReloj.textContent = textoFecha + ' · ' + textoHora;
+    elReloj.textContent = 'La Plata, ' + textoFecha + ' · ' + textoHora;
     elReloj.setAttribute('datetime', ahora.toISOString());
+  }
+
+  // ------------------------------------------------------------------
+  // Ticker de clima (La Plata) y cotización del dólar
+  // ------------------------------------------------------------------
+
+  function cargarTickerClimaDolar() {
+    if (!elTickerClima && !elTickerDolar) {
+      return;
+    }
+    obtenerJSON('/api/clima-dolar')
+      .then(function (datos) {
+        if (elTickerClima) {
+          if (datos && datos.clima) {
+            elTickerClima.textContent =
+              datos.clima.temperatura + '°C · Humedad ' + datos.clima.humedad +
+              '% · Viento ' + datos.clima.viento + 'km/h';
+            elTickerClima.hidden = false;
+          } else {
+            elTickerClima.hidden = true;
+          }
+        }
+        if (elTickerDolar) {
+          if (datos && datos.dolar) {
+            elTickerDolar.textContent =
+              'Dólar Oficial $' + datos.dolar.oficial.venta +
+              ' · Dólar Blue $' + datos.dolar.blue.venta;
+            elTickerDolar.hidden = false;
+          } else {
+            elTickerDolar.hidden = true;
+          }
+        }
+      })
+      .catch(function (error) {
+        if (elTickerClima) elTickerClima.hidden = true;
+        if (elTickerDolar) elTickerDolar.hidden = true;
+        console.error('No se pudo cargar el ticker de clima/dólar.', error);
+      });
   }
 
   // ------------------------------------------------------------------
@@ -770,6 +810,8 @@
     cargarUltimasNoticias();
     cargarFuentes();
     cargarPublicidadesSidebar();
+    cargarTickerClimaDolar();
+    setInterval(cargarTickerClimaDolar, 10 * 60 * 1000); // se refresca cada 10 minutos
 
     configurarBusqueda();
     configurarLogo();
