@@ -2,11 +2,10 @@
 
 Portal de noticias especializado en seguridad de la provincia de Buenos
 Aires, Argentina. Agrega automáticamente noticias desde feeds RSS de
-medios argentinos, las categoriza por tema (Policía Bonaerense,
-Narcotráfico, Accidentes, Seguridad Vial, Justicia o
-General) y las publica en un sitio público. Incluye un panel de
-administración para gestionar noticias, fuentes RSS, publicidades y la
-configuración general del sitio.
+medios argentinos, las categoriza por tema (Seguridad, Narcotráfico,
+Política o Internacional) y las publica en un sitio público. Incluye un
+panel de administración para gestionar noticias, fuentes RSS,
+publicidades y la configuración general del sitio.
 
 **Aviso legal sobre el contenido de terceros**: el portal nunca guarda ni
 muestra el texto completo de una nota ajena. Solo guarda título, un

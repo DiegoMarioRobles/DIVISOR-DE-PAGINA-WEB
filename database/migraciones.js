@@ -205,6 +205,27 @@ function reasignarCategoriaDetenciones() {
   db.ejecutar("UPDATE noticias SET categoria = 'Policía Bonaerense' WHERE categoria = 'Detenciones'");
 }
 
+// Categorías viejas (más específicas de policiales) que ahora se
+// fusionan todas en la nueva categoría única "Seguridad".
+const CATEGORIAS_VIEJAS_A_SEGURIDAD = ['Policía Bonaerense', 'Accidentes', 'Seguridad Vial', 'Justicia'];
+
+/**
+ * Fusiona la taxonomía anterior (más granular: "Policía Bonaerense",
+ * "Accidentes", "Seguridad Vial", "Justicia") en la nueva categoría
+ * única "Seguridad", y agrega "Política" e "Internacional" como
+ * categorías nuevas (a pedido del administrador). Se aplica tanto a
+ * noticias ya guardadas como a fuentes que ya tuvieran una de esas
+ * categorías fijas en `categoria_default`.
+ */
+function fusionarCategoriasViejasEnSeguridad() {
+  const marcadores = CATEGORIAS_VIEJAS_A_SEGURIDAD.map(() => '?').join(',');
+  db.ejecutar(`UPDATE noticias SET categoria = 'Seguridad' WHERE categoria IN (${marcadores})`, CATEGORIAS_VIEJAS_A_SEGURIDAD);
+  db.ejecutar(
+    `UPDATE fuentes SET categoria_default = 'Seguridad' WHERE categoria_default IN (${marcadores})`,
+    CATEGORIAS_VIEJAS_A_SEGURIDAD
+  );
+}
+
 /**
  * Renombra el portal a "El Observador" en instalaciones que todavía
  * tengan alguno de los nombres anteriores del proyecto ("Seguridad
@@ -233,6 +254,7 @@ function ejecutarMigraciones() {
   sembrarFuentes();
   renombrarPortalSiSigueEnValorViejo();
   reasignarCategoriaDetenciones();
+  fusionarCategoriasViejasEnSeguridad();
 }
 
 module.exports = { ejecutarMigraciones };

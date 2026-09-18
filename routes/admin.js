@@ -15,14 +15,7 @@ const { asyncHandler, CodigoError } = require('../middleware/errores');
 
 const router = express.Router();
 
-const CATEGORIAS_POR_DEFECTO = [
-  'Policía Bonaerense',
-  'Narcotráfico',
-  'Accidentes',
-  'Seguridad Vial',
-  'Justicia',
-  'General',
-];
+const CATEGORIAS_POR_DEFECTO = ['Seguridad', 'Narcotráfico', 'Política', 'Internacional', 'General'];
 
 const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer'];
 

@@ -18,21 +18,19 @@ const router = express.Router();
 // ya existe, se usa su export `CATEGORIAS` para no duplicar la fuente de
 // verdad; si todavía no existe, se usa este respaldo (mismos valores que
 // el CONTRATO.md) para que `/api/categorias` funcione igual.
-const CATEGORIAS_POR_DEFECTO = [
-  'Policía Bonaerense',
-  'Narcotráfico',
-  'Accidentes',
-  'Seguridad Vial',
-  'Justicia',
-  'General',
-];
+const CATEGORIAS_POR_DEFECTO = ['Seguridad', 'Narcotráfico', 'Política', 'Internacional'];
 
+// 'General' es la categoría de reserva del categorizador (ver
+// services/categorizador.js): existe para que siempre haya dónde guardar
+// lo que no matchea ninguna palabra clave, pero no se expone como sección
+// propia del portal público (el administrador pidió que la navegación
+// tenga exactamente estas 4 secciones).
 function obtenerCategorias() {
   try {
     // eslint-disable-next-line global-require
     const categorizador = require('../services/categorizador');
     if (Array.isArray(categorizador.CATEGORIAS) && categorizador.CATEGORIAS.length > 0) {
-      return categorizador.CATEGORIAS;
+      return categorizador.CATEGORIAS.filter((c) => c !== 'General');
     }
     return CATEGORIAS_POR_DEFECTO;
   } catch (err) {

@@ -11,12 +11,10 @@
 
   var IMAGEN_PLACEHOLDER = 'img/placeholder.svg';
   var CATEGORIAS_POR_DEFECTO = [
-    'Policía Bonaerense',
+    'Seguridad',
     'Narcotráfico',
-    'Accidentes',
-    'Seguridad Vial',
-    'Justicia',
-    'General'
+    'Política',
+    'Internacional'
   ];
 
   // Estado de la vista de listado/búsqueda de noticias.

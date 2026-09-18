@@ -9,40 +9,42 @@
  *
  * Contrato (ver CONTRATO.md, sección 4bis):
  *   categorizar(titulo, resumen) -> nombre de categoría (string)
- *   CATEGORIAS -> array fijo con las 7 categorías, en orden.
+ *   CATEGORIAS -> array fijo con las 5 categorías, en orden.
  */
 
 // Lista fija y ordenada de categorías posibles. 'General' es la categoría
-// de reserva cuando el texto no matchea ninguna palabra clave.
+// de reserva cuando el texto no matchea ninguna palabra clave: no se
+// muestra como sección propia en el portal público (ver
+// `routes/publico.js`, GET /api/categorias), pero sigue existiendo para
+// que el categorizador siempre tenga dónde guardar lo que no matchea con
+// ninguna de las otras cuatro.
 //
-// 'Detenciones' se eliminó como categoría propia (a pedido del
-// administrador): sus palabras clave se fusionaron dentro de
-// 'Policía Bonaerense', ya que un arresto/allanamiento es, en la
-// práctica, una acción policial.
-const CATEGORIAS = [
-  'Policía Bonaerense',
-  'Narcotráfico',
-  'Accidentes',
-  'Seguridad Vial',
-  'Justicia',
-  'General',
-];
+// Taxonomía simplificada a pedido del administrador: las categorías
+// anteriores más específicas de policiales ("Policía Bonaerense",
+// "Accidentes", "Seguridad Vial", "Justicia") se fusionaron todas en una
+// sola "Seguridad", y se agregaron "Política" e "Internacional" (el
+// portal ahora también agrega medios locales generalistas, no solo de
+// policiales).
+const CATEGORIAS = ['Seguridad', 'Narcotráfico', 'Política', 'Internacional', 'General'];
 
 // Palabras clave por categoría, normalizadas (minúsculas, sin acentos) al
 // cargar el módulo, con la misma función que se usa para normalizar el
 // texto de cada noticia, así la comparación es siempre consistente.
 //
-// ⚠️ 'bonaerense' y 'agente' (sueltas) se sacaron de acá a propósito: son
-// demasiado genéricas para un feed de noticias regionales de la
-// provincia de Buenos Aires — aparecen en cualquier nota sobre economía,
-// política o sociedad ("el gobierno bonaerense", "un agente inmobiliario",
-// etc.), no solo en policiales. Con esas dos palabras sueltas, casi
-// cualquier noticia terminaba categorizada como "Policía Bonaerense" sin
-// tener nada que ver, y por eso todas las secciones del portal se veían
-// iguales. Se mantiene la frase compuesta "policía bonaerense", que sí es
-// específica.
+// ⚠️ 'bonaerense', 'agente' y 'gobierno' (sueltas) se evitan a propósito:
+// son demasiado genéricas para un feed de noticias regionales de la
+// provincia de Buenos Aires — aparecen en cualquier nota de economía o
+// sociedad, no solo en la categoría que corresponde. Se prefieren frases
+// compuestas o palabras más específicas.
+//
+// "Política" e "Internacional" son, por naturaleza, más difíciles de
+// distinguir por palabras clave que "Seguridad" o "Narcotráfico" (son
+// temas amplios). Para una fuente que es siempre de un tema fijo (ej. un
+// medio 100% de política), es más confiable usar `categoria_default` en
+// esa fuente (panel admin → Fuentes RSS) en vez de depender del
+// categorizador automático acá.
 const PALABRAS_CLAVE = {
-  'Policía Bonaerense': [
+  Seguridad: [
     'policía bonaerense',
     'policía',
     'policial',
@@ -51,7 +53,6 @@ const PALABRAS_CLAVE = {
     'patrullero',
     'uniformado',
     'destacamento',
-    // Fusionadas desde la ex categoría "Detenciones":
     'detenido',
     'detención',
     'arresto',
@@ -59,6 +60,24 @@ const PALABRAS_CLAVE = {
     'capturado',
     'prófugo',
     'allanamiento',
+    'accidente',
+    'choque',
+    'colisión',
+    'vuelco',
+    'siniestro vial',
+    'atropelló',
+    'despiste',
+    'alcoholemia',
+    'control vehicular',
+    'juicio',
+    'condena',
+    'fiscal',
+    'fiscalía',
+    'juzgado',
+    'imputado',
+    'sentencia',
+    'procesado',
+    'elevó a juicio',
   ],
   'Narcotráfico': [
     'droga',
@@ -71,33 +90,31 @@ const PALABRAS_CLAVE = {
     'estupefacientes',
     'kiosco de drogas',
   ],
-  Accidentes: [
-    'accidente',
-    'choque',
-    'colisión',
-    'vuelco',
-    'siniestro vial',
-    'atropelló',
-    'despiste',
+  'Política': [
+    'gobernador',
+    'intendente',
+    'legislatura',
+    'diputado',
+    'senador',
+    'concejal',
+    'elecciones',
+    'candidato',
+    'ministro',
+    'presidente',
+    'gabinete',
+    'proyecto de ley',
+    'sesión legislativa',
+    'oficialismo',
+    'oposición política',
   ],
-  'Seguridad Vial': [
-    'tránsito',
-    'multa',
-    'licencia de conducir',
-    'alcoholemia',
-    'control vehicular',
-    'scoring',
-  ],
-  Justicia: [
-    'juicio',
-    'condena',
-    'fiscal',
-    'fiscalía',
-    'juzgado',
-    'imputado',
-    'sentencia',
-    'procesado',
-    'elevó a juicio',
+  Internacional: [
+    'estados unidos',
+    'unión europea',
+    'medio oriente',
+    'naciones unidas',
+    'ucrania',
+    'rusia',
+    'internacional',
   ],
 };
 
