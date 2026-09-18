@@ -154,25 +154,26 @@ function sembrarConfiguracion() {
 }
 
 /**
- * Inserta las fuentes candidatas de seeds/fuentes.js si la tabla
- * "fuentes" está vacía (primer arranque). Quedan tal como las dejó ese
- * archivo: NINGUNA verificada en vivo, todas con activa=0 — el
- * administrador debe validarlas desde el panel antes de activarlas.
+ * Inserta las fuentes de seeds/fuentes.js que todavía no existan en la
+ * tabla "fuentes" (comparando por `url_rss`, que es UNIQUE). Es
+ * aditivo e idempotente: se puede llamar en cada arranque, y cada vez
+ * que se agreguen fuentes nuevas a seeds/fuentes.js y se vuelva a
+ * desplegar, esas nuevas se insertan solas sin tocar ni duplicar las
+ * que ya estaban (incluidas las que el administrador ya activó o editó
+ * a mano desde el panel).
  */
 function sembrarFuentes() {
-  const totalExistente = db.consultarUno('SELECT COUNT(*) AS total FROM fuentes').total;
-  if (totalExistente > 0) return;
-
+  let insertadas = 0;
   for (const fuente of FUENTES_SEMILLA) {
-    db.ejecutar(
-      'INSERT INTO fuentes (nombre, url_rss, sitio_web, activa) VALUES (?, ?, ?, ?)',
+    const resultado = db.ejecutar(
+      'INSERT OR IGNORE INTO fuentes (nombre, url_rss, sitio_web, activa) VALUES (?, ?, ?, ?)',
       [fuente.nombre, fuente.url_rss, fuente.sitio_web || null, fuente.activa ? 1 : 0]
     );
+    if (resultado.changes > 0) insertadas += 1;
   }
-  console.log(
-    `${FUENTES_SEMILLA.length} fuente(s) RSS candidata(s) cargada(s) como referencia ` +
-      '(todas inactivas: no verificadas en el entorno de desarrollo, validar antes de activar).'
-  );
+  if (insertadas > 0) {
+    console.log(`${insertadas} fuente(s) RSS nueva(s) de seeds/fuentes.js cargada(s).`);
+  }
 }
 
 /**

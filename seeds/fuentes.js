@@ -98,6 +98,138 @@ const FUENTES = [
     sitio_web: 'https://www.eldia.com',
     activa: false,
   },
+
+  // ---------------------------------------------------------------------
+  // Las siguientes 20 fuentes las pasó el administrador directamente (no
+  // son una investigación propia de este código). Se marcan `activa:
+  // true` porque el propio administrador las aportó, pero TAMPOCO se
+  // pudieron probar en vivo en este entorno de desarrollo (mismo bloqueo
+  // de red de siempre). El motor RSS aísla fallas por fuente: si alguna
+  // de estas URLs no responde o cambió, va a quedar reflejado solo en su
+  // columna `ultimo_error` de la tabla Fuentes RSS del panel, sin afectar
+  // a las demás. Conviene revisar esa tabla después del primer despliegue
+  // y corregir o desactivar la que haya fallado.
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Diario La Ciudad',
+    url_rss: 'https://laciudadavellaneda.com.ar/feed/',
+    sitio_web: 'https://laciudadavellaneda.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'InfoAvellaneda',
+    url_rss: 'https://infoavellaneda.com.ar/feed/',
+    sitio_web: 'https://infoavellaneda.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Diario de Morón',
+    url_rss: 'https://diariodemoron.com.ar/feed/',
+    sitio_web: 'https://diariodemoron.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'El 1 Digital',
+    url_rss: 'https://el1digital.com.ar/feed/',
+    sitio_web: 'https://el1digital.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'El Mensajero de Moreno',
+    url_rss: 'https://elmensajerodemoreno.com.ar/feed/',
+    sitio_web: 'https://elmensajerodemoreno.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Zona Norte Visión',
+    url_rss: 'https://zonanortevision.com.ar/feed/',
+    sitio_web: 'https://zonanortevision.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'El Suburbano Digital',
+    url_rss: 'https://elsuburbanodigital.com.ar/feed/',
+    sitio_web: 'https://elsuburbanodigital.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Centro Informativo Quilmes',
+    url_rss: 'https://centroinformativoq.com.ar/feed/',
+    sitio_web: 'https://centroinformativoq.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'El Sol de Quilmes',
+    url_rss: 'https://elsolquilmes.com.ar/feed/',
+    sitio_web: 'https://elsolquilmes.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Quilmes Presente',
+    url_rss: 'https://quilmespresente.com.ar/feed/',
+    sitio_web: 'https://quilmespresente.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'El Diario Varelense',
+    url_rss: 'https://eldiariovarelense.com.ar/feed/',
+    sitio_web: 'https://eldiariovarelense.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Varela al Día',
+    url_rss: 'https://varelaaldia.com.ar/feed/',
+    sitio_web: 'https://varelaaldia.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Infosur Diario',
+    url_rss: 'https://infosurdiario.com.ar/feed/',
+    sitio_web: 'https://infosurdiario.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Diario La Verdad',
+    url_rss: 'https://www.diariolaverdad.com.ar/feed/',
+    sitio_web: 'https://www.diariolaverdad.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'La Unión (Zona Sur)',
+    url_rss: 'https://www.launion.com.ar/feed/',
+    sitio_web: 'https://www.launion.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Radar Norte',
+    url_rss: 'https://radarnorte.ar/feed/',
+    sitio_web: 'https://radarnorte.ar',
+    activa: true,
+  },
+  {
+    nombre: 'ParaBuenosAires',
+    url_rss: 'https://parabuenosaires.com/feed/',
+    sitio_web: 'https://parabuenosaires.com',
+    activa: true,
+  },
+  {
+    nombre: 'Diario El Día (eldia.com.ar)',
+    url_rss: 'https://www.eldia.com.ar/feed/',
+    sitio_web: 'https://www.eldia.com.ar',
+    activa: true,
+  },
+  {
+    nombre: '0221 La Plata',
+    url_rss: 'https://www.0221.com.ar/feed/',
+    sitio_web: 'https://www.0221.com.ar',
+    activa: true,
+  },
+  {
+    nombre: 'Diario Panorama',
+    url_rss: 'https://www.dib.com.ar/feed/',
+    sitio_web: 'https://www.dib.com.ar',
+    activa: true,
+  },
 ];
 
 /**
