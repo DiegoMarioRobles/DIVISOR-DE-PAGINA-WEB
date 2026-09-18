@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de administración — Seguridad Bonaerense</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<!-- ==================== PANTALLA DE LOGIN ==================== -->
+<div id="pantalla-login" class="pantalla-login">
+  <div class="tarjeta-login">
+    <h1>Seguridad Bonaerense</h1>
+    <p class="subtitulo-login">Panel de administración</p>
+    <form id="form-login" novalidate>
+      <label for="login-usuario">Usuario</label>
+      <input type="text" id="login-usuario" name="usuario" autocomplete="username" required>
+      <label for="login-password">Contraseña</label>
+      <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+      <p id="login-error" class="mensaje-error oculta"></p>
+      <button type="submit" id="btn-login" class="btn btn-primario btn-ancho">Ingresar</button>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== PANEL ADMIN ==================== -->
+<div id="panel-admin" class="panel-admin oculta">
+
+  <header class="topbar-movil">
+    <button id="btn-menu-movil" class="btn-icono" type="button" aria-label="Abrir menú">☰</button>
+    <span class="topbar-titulo">Seguridad Bonaerense — Admin</span>
+  </header>
+
+  <div id="fondo-sidebar" class="fondo-sidebar oculta"></div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-encabezado">
+      <h2>Seguridad<br>Bonaerense</h2>
+      <span class="sidebar-subtitulo">Panel de administración</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item activo" data-seccion="dashboard" type="button"><span class="nav-icono">📊</span> Dashboard</button>
+      <button class="nav-item" data-seccion="noticias" type="button"><span class="nav-icono">📰</span> Noticias</button>
+      <button class="nav-item" data-seccion="fuentes" type="button"><span class="nav-icono">📡</span> Fuentes RSS</button>
+      <button class="nav-item" data-seccion="publicidades" type="button"><span class="nav-icono">📢</span> Publicidades</button>
+      <button class="nav-item" data-seccion="configuracion" type="button"><span class="nav-icono">⚙️</span> Configuración</button>
+    </nav>
+    <div class="sidebar-pie">
+      <span id="usuario-actual" class="usuario-actual"></span>
+      <button id="btn-logout" class="btn btn-secundario btn-ancho" type="button"><span class="nav-icono">🚪</span> Salir</button>
+    </div>
+  </aside>
+
+  <main id="contenido" class="contenido">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="seccion-dashboard" class="seccion">
+      <h1>Dashboard</h1>
+
+      <div class="tarjetas-stats">
+        <div class="tarjeta-stat">
+          <span class="stat-numero" id="stat-hoy">—</span>
+          <span class="stat-etiqueta">Noticias de hoy</span>
+        </div>
+        <div class="tarjeta-stat">
+          <span class="stat-numero" id="stat-semana">—</span>
+          <span class="stat-etiqueta">Esta semana</span>
+        </div>
+        <div class="tarjeta-stat">
+          <span class="stat-numero" id="stat-total">—</span>
+          <span class="stat-etiqueta">Total de noticias</span>
+        </div>
+        <div class="tarjeta-stat">
+          <span class="stat-numero" id="stat-fuentes-activas">—</span>
+          <span class="stat-etiqueta">Fuentes activas</span>
+        </div>
+      </div>
+
+      <div class="panel-caja">
+        <h3>Última actualización RSS</h3>
+        <p><strong>Fecha:</strong> <span id="dash-ultima-lectura">—</span></p>
+        <p><strong>Resultado:</strong> <span id="dash-ultimo-resultado">—</span></p>
+      </div>
+
+      <div class="panel-caja">
+        <h3>Noticias por día (últimos 7 días)</h3>
+        <canvas id="grafico-noticias" width="700" height="260"></canvas>
+      </div>
+
+      <div class="panel-caja">
+        <h3>Últimos registros del log</h3>
+        <div class="tabla-scroll">
+          <table class="tabla">
+            <thead><tr><th>Tipo</th><th>Mensaje</th><th>Detalle</th><th>Fecha</th></tr></thead>
+            <tbody id="tabla-logs-body"><tr><td colspan="4" class="celda-vacia">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- NOTICIAS ---------- -->
+    <section id="seccion-noticias" class="seccion oculta">
+      <div class="seccion-encabezado">
+        <h1>Noticias</h1>
+        <button id="btn-nueva-noticia" class="btn btn-primario" type="button">+ Nueva noticia</button>
+      </div>
+
+      <div class="barra-filtros">
+        <input type="search" id="filtro-buscar-noticias" class="input-filtro" placeholder="Buscar por texto…">
+        <select id="filtro-categoria-noticias" class="input-filtro">
+          <option value="">Todas las categorías</option>
+        </select>
+        <select id="filtro-fuente-noticias" class="input-filtro">
+          <option value="">Todas las fuentes</option>
+        </select>
+      </div>
+
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th>Título</th><th>Origen</th><th>Categoría</th><th>Fuente</th><th>Fecha</th>
+              <th>Destacada</th><th>Oculta</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-noticias-body"><tr><td colspan="8" class="celda-vacia">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="paginacion" id="paginacion-noticias"></div>
+    </section>
+
+    <!-- ---------- FUENTES RSS ---------- -->
+    <section id="seccion-fuentes" class="seccion oculta">
+      <div class="seccion-encabezado">
+        <h1>Fuentes RSS</h1>
+        <div class="acciones-encabezado">
+          <button id="btn-actualizar-todas" class="btn btn-secundario" type="button">Actualizar todas</button>
+          <button id="btn-nueva-fuente" class="btn btn-primario" type="button">+ Agregar fuente</button>
+        </div>
+      </div>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Nombre</th><th>URL del feed</th><th>Estado</th><th>Última lectura</th><th>Noticias traídas</th><th>Último error</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-fuentes-body"><tr><td colspan="7" class="celda-vacia">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- PUBLICIDADES ---------- -->
+    <section id="seccion-publicidades" class="seccion oculta">
+      <div class="seccion-encabezado">
+        <h1>Publicidades</h1>
+        <button id="btn-nueva-publicidad" class="btn btn-primario" type="button">+ Nueva publicidad</button>
+      </div>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead>
+            <tr><th>Nombre</th><th>Posición</th><th>Vigencia</th><th>Estado</th><th>Impresiones</th><th>Clicks</th><th>CTR</th><th>Acciones</th></tr>
+          </thead>
+          <tbody id="tabla-publicidades-body"><tr><td colspan="8" class="celda-vacia">Cargando…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- CONFIGURACIÓN ---------- -->
+    <section id="seccion-configuracion" class="seccion oculta">
+      <h1>Configuración</h1>
+
+      <form id="form-config" class="panel-caja formulario">
+        <h3>Datos del portal</h3>
+        <div class="fila-formulario">
+          <div class="campo">
+            <label for="cfg-nombre-portal">Nombre del portal</label>
+            <input type="text" id="cfg-nombre-portal" maxlength="120">
+          </div>
+          <div class="campo">
+            <label for="cfg-logo-url">URL del logo</label>
+            <input type="url" id="cfg-logo-url" placeholder="https://…">
+          </div>
+        </div>
+        <div class="fila-formulario">
+          <div class="campo campo-color">
+            <label for="cfg-color-primario">Color primario</label>
+            <input type="color" id="cfg-color-primario">
+          </div>
+          <div class="campo campo-color">
+            <label for="cfg-color-acento">Color de acento</label>
+            <input type="color" id="cfg-color-acento">
+          </div>
+        </div>
+        <div class="fila-formulario">
+          <div class="campo">
+            <label for="cfg-intervalo-rss">Intervalo de actualización RSS (minutos)</label>
+            <input type="number" id="cfg-intervalo-rss" min="1" step="1">
+          </div>
+          <div class="campo">
+            <label for="cfg-noticias-pagina">Noticias por página</label>
+            <input type="number" id="cfg-noticias-pagina" min="1" step="1">
+          </div>
+        </div>
+        <div class="campo">
+          <label for="cfg-texto-legal">Texto del aviso legal (footer)</label>
+          <textarea id="cfg-texto-legal" rows="4"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primario">Guardar configuración</button>
+      </form>
+
+      <form id="form-password" class="panel-caja formulario">
+        <h3>Cambiar contraseña</h3>
+        <div class="fila-formulario">
+          <div class="campo">
+            <label for="pass-actual">Contraseña actual</label>
+            <input type="password" id="pass-actual" autocomplete="current-password" required>
+          </div>
+          <div class="campo">
+            <label for="pass-nueva">Contraseña nueva</label>
+            <input type="password" id="pass-nueva" autocomplete="new-password" required minlength="6">
+          </div>
+          <div class="campo">
+            <label for="pass-nueva-confirmar">Confirmar contraseña nueva</label>
+            <input type="password" id="pass-nueva-confirmar" autocomplete="new-password" required minlength="6">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primario">Cambiar contraseña</button>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- ==================== MODAL: NUEVA / EDITAR NOTICIA ==================== -->
+<div id="modal-noticia" class="modal-overlay oculta">
+  <div class="modal">
+    <div class="modal-encabezado">
+      <h2 id="modal-noticia-titulo">Nueva noticia</h2>
+      <button type="button" class="btn-cerrar-modal" data-cerrar="modal-noticia" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-noticia" novalidate>
+      <input type="hidden" id="noticia-id">
+      <div class="campo">
+        <label for="noticia-titulo">Título</label>
+        <input type="text" id="noticia-titulo" maxlength="200" required>
+      </div>
+      <div class="campo">
+        <label for="noticia-resumen">Resumen <span id="contador-resumen" class="contador">0/300</span></label>
+        <textarea id="noticia-resumen" maxlength="300" rows="3" required></textarea>
+      </div>
+      <div class="campo">
+        <label for="noticia-categoria">Categoría</label>
+        <select id="noticia-categoria" required></select>
+      </div>
+      <div class="campo">
+        <label for="noticia-imagen">URL de imagen</label>
+        <input type="url" id="noticia-imagen" placeholder="https://…">
+      </div>
+      <div class="campo oculta" id="grupo-noticia-contenido">
+        <label for="noticia-contenido">Contenido completo</label>
+        <textarea id="noticia-contenido" rows="8"></textarea>
+      </div>
+      <div class="campo oculta" id="grupo-noticia-link">
+        <label>Link original (fuente RSS, no editable)</label>
+        <p id="noticia-link-original" class="texto-solo-lectura"></p>
+      </div>
+      <p id="noticia-form-error" class="mensaje-error oculta"></p>
+      <div class="modal-acciones">
+        <button type="button" class="btn btn-secundario" data-cerrar="modal-noticia">Cancelar</button>
+        <button type="submit" class="btn btn-primario" id="btn-guardar-noticia">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: NUEVA / EDITAR FUENTE ==================== -->
+<div id="modal-fuente" class="modal-overlay oculta">
+  <div class="modal">
+    <div class="modal-encabezado">
+      <h2 id="modal-fuente-titulo">Agregar fuente RSS</h2>
+      <button type="button" class="btn-cerrar-modal" data-cerrar="modal-fuente" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-fuente" novalidate>
+      <input type="hidden" id="fuente-id">
+      <div class="campo">
+        <label for="fuente-nombre">Nombre</label>
+        <input type="text" id="fuente-nombre" maxlength="120" required>
+      </div>
+      <div class="campo">
+        <label for="fuente-url">URL del feed RSS</label>
+        <input type="url" id="fuente-url" placeholder="https://…" required>
+      </div>
+      <div class="campo">
+        <label for="fuente-sitio">Sitio web (opcional)</label>
+        <input type="url" id="fuente-sitio" placeholder="https://…">
+      </div>
+      <div class="campo">
+        <button type="button" id="btn-validar-fuente" class="btn btn-secundario">Validar feed</button>
+        <div id="resultado-validacion" class="resultado-validacion"></div>
+      </div>
+      <label class="campo-checkbox oculta" id="grupo-guardar-sin-validar">
+        <input type="checkbox" id="chk-guardar-sin-validar">
+        Guardar de todas formas (el feed no pudo validarse)
+      </label>
+      <p id="fuente-form-error" class="mensaje-error oculta"></p>
+      <div class="modal-acciones">
+        <button type="button" class="btn btn-secundario" data-cerrar="modal-fuente">Cancelar</button>
+        <button type="submit" class="btn btn-primario" id="btn-guardar-fuente" disabled>Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL: NUEVA / EDITAR PUBLICIDAD ==================== -->
+<div id="modal-publicidad" class="modal-overlay oculta">
+  <div class="modal">
+    <div class="modal-encabezado">
+      <h2 id="modal-publicidad-titulo">Nueva publicidad</h2>
+      <button type="button" class="btn-cerrar-modal" data-cerrar="modal-publicidad" aria-label="Cerrar">×</button>
+    </div>
+    <form id="form-publicidad" novalidate>
+      <input type="hidden" id="publicidad-id">
+      <div class="campo">
+        <label for="publicidad-nombre">Nombre</label>
+        <input type="text" id="publicidad-nombre" maxlength="120" required>
+      </div>
+      <div class="campo">
+        <label for="publicidad-imagen">URL de imagen</label>
+        <input type="url" id="publicidad-imagen" placeholder="https://…" required>
+      </div>
+      <div class="campo">
+        <label for="publicidad-link">Link destino</label>
+        <input type="url" id="publicidad-link" placeholder="https://…" required>
+      </div>
+      <div class="campo">
+        <label for="publicidad-posicion">Posición</label>
+        <select id="publicidad-posicion" required>
+          <option value="header">Header</option>
+          <option value="sidebar">Sidebar</option>
+          <option value="entre-noticias">Entre noticias</option>
+          <option value="footer">Footer</option>
+        </select>
+      </div>
+      <div class="fila-formulario">
+        <div class="campo">
+          <label for="publicidad-inicio">Fecha de inicio</label>
+          <input type="date" id="publicidad-inicio">
+        </div>
+        <div class="campo">
+          <label for="publicidad-fin">Fecha de fin</label>
+          <input type="date" id="publicidad-fin">
+        </div>
+      </div>
+      <div class="campo">
+        <label>Vista previa</label>
+        <div class="vista-previa-anuncio">
+          <a id="preview-publicidad-link" href="#" target="_blank" rel="noopener noreferrer">
+            <img id="preview-publicidad-img" src="" alt="Vista previa de la publicidad" style="display:none;">
+          </a>
+          <span id="preview-publicidad-vacio" class="texto-secundario">Completá la URL de la imagen para ver la vista previa</span>
+        </div>
+      </div>
+      <p id="publicidad-form-error" class="mensaje-error oculta"></p>
+      <div class="modal-acciones">
+        <button type="button" class="btn btn-secundario" data-cerrar="modal-publicidad">Cancelar</button>
+        <button type="submit" class="btn btn-primario">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ==================== MODAL DE CONFIRMACIÓN GENÉRICO ==================== -->
+<div id="modal-confirmar" class="modal-overlay oculta">
+  <div class="modal modal-chico">
+    <div class="modal-encabezado">
+      <h2>Confirmar acción</h2>
+    </div>
+    <p id="modal-confirmar-mensaje"></p>
+    <div class="modal-acciones">
+      <button type="button" class="btn btn-secundario" id="modal-confirmar-cancelar">Cancelar</button>
+      <button type="button" class="btn btn-peligro" id="modal-confirmar-aceptar">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOASTS ==================== -->
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
