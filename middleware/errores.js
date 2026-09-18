@@ -36,16 +36,34 @@ function asyncHandler(fn) {
  * Middleware global de manejo de errores de Express. Debe registrarse
  * al final de la cadena de middlewares, después de todas las rutas.
  */
+function esCodigoHttpValido(valor) {
+  return Number.isInteger(valor) && valor >= 400 && valor < 600;
+}
+
 // eslint-disable-next-line no-unused-vars
 function manejadorErrores(err, req, res, next) {
-  const codigo = err && Number.isInteger(err.codigo) && err.codigo >= 400 && err.codigo < 600
-    ? err.codigo
-    : 500;
+  // `err.codigo` es lo que usan los CodigoError propios de esta app.
+  // `err.status` / `err.statusCode` son los que usan Express y sus
+  // middlewares internos (por ejemplo, express.json() ante un body con
+  // JSON mal formado responde con status 400): también los respetamos
+  // para no convertir errores de entrada del cliente en un 500.
+  let codigo = 500;
+  if (esCodigoHttpValido(err && err.codigo)) {
+    codigo = err.codigo;
+  } else if (esCodigoHttpValido(err && err.status)) {
+    codigo = err.status;
+  } else if (esCodigoHttpValido(err && err.statusCode)) {
+    codigo = err.statusCode;
+  }
 
   const mensaje =
     codigo === 500
       ? 'Ocurrió un error interno en el servidor. Intentá nuevamente más tarde.'
-      : (err && err.mensaje) || (err && err.message) || 'Ocurrió un error.';
+      : (err && err.mensaje) ||
+        (codigo === 400 && err && err.type === 'entity.parse.failed'
+          ? 'El cuerpo de la petición no es un JSON válido.'
+          : (err && err.message)) ||
+        'Ocurrió un error.';
 
   if (codigo === 500) {
     console.error('Error no manejado:', err);
