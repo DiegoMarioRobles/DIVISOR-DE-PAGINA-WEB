@@ -12,7 +12,7 @@ const CLAVE_TOKEN = 'sb_admin_token';
 const CLAVE_USUARIO = 'sb_admin_usuario';
 
 // Lista fija de categorías, tal como la expone services/categorizador.js
-const CATEGORIAS = ['Seguridad', 'Narcotráfico', 'Política', 'Internacional', 'General'];
+const CATEGORIAS = ['Policial', 'Político', 'Deportivo', 'General'];
 
 const ETIQUETAS_POSICION = {
   header: 'Header',

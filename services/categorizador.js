@@ -9,7 +9,7 @@
  *
  * Contrato (ver CONTRATO.md, sección 4bis):
  *   categorizar(titulo, resumen) -> nombre de categoría (string)
- *   CATEGORIAS -> array fijo con las 5 categorías, en orden.
+ *   CATEGORIAS -> array fijo con las categorías, en orden.
  */
 
 // Lista fija y ordenada de categorías posibles. 'General' es la categoría
@@ -17,34 +17,37 @@
 // muestra como sección propia en el portal público (ver
 // `routes/publico.js`, GET /api/categorias), pero sigue existiendo para
 // que el categorizador siempre tenga dónde guardar lo que no matchea con
-// ninguna de las otras cuatro.
+// ninguna de las otras.
 //
-// Taxonomía simplificada a pedido del administrador: las categorías
-// anteriores más específicas de policiales ("Policía Bonaerense",
-// "Accidentes", "Seguridad Vial", "Justicia") se fusionaron todas en una
-// sola "Seguridad", y se agregaron "Política" e "Internacional" (el
-// portal ahora también agrega medios locales generalistas, no solo de
-// policiales).
-const CATEGORIAS = ['Seguridad', 'Narcotráfico', 'Política', 'Internacional', 'General'];
+// Taxonomía a pedido del administrador: 3 secciones temáticas
+// (Policial/Político/Deportivo) más la pestaña "Todo" del portal, que no
+// es una categoría real sino el listado sin filtrar (ver
+// `public/js/main.js`).
+const CATEGORIAS = ['Policial', 'Político', 'Deportivo', 'General'];
 
 // Palabras clave por categoría, normalizadas (minúsculas, sin acentos) al
 // cargar el módulo, con la misma función que se usa para normalizar el
 // texto de cada noticia, así la comparación es siempre consistente.
 //
-// ⚠️ 'bonaerense', 'agente' y 'gobierno' (sueltas) se evitan a propósito:
-// son demasiado genéricas para un feed de noticias regionales de la
-// provincia de Buenos Aires — aparecen en cualquier nota de economía o
-// sociedad, no solo en la categoría que corresponde. Se prefieren frases
-// compuestas o palabras más específicas.
+// ⚠️ Palabras sueltas demasiado genéricas (ej. 'bonaerense', 'agente',
+// 'gobierno', 'partido') se evitan a propósito: aparecen en cualquier
+// nota de economía, sociedad o incluso deportes, no solo en la categoría
+// que corresponde (lección aprendida: con 'bonaerense' suelta, casi todo
+// terminaba cayendo en la misma sección). Se prefieren frases compuestas
+// o palabras más específicas.
 //
-// "Política" e "Internacional" son, por naturaleza, más difíciles de
-// distinguir por palabras clave que "Seguridad" o "Narcotráfico" (son
-// temas amplios). Para una fuente que es siempre de un tema fijo (ej. un
-// medio 100% de política), es más confiable usar `categoria_default` en
-// esa fuente (panel admin → Fuentes RSS) en vez de depender del
-// categorizador automático acá.
+// Para una fuente que es siempre de un tema fijo (ej. un medio 100%
+// deportivo), es más confiable usar `categoria_default` en esa fuente
+// (panel admin → Fuentes RSS) en vez de depender del categorizador
+// automático acá.
 const PALABRAS_CLAVE = {
-  Seguridad: [
+  // Sección "policiales" en el sentido amplio y tradicional del término
+  // en medios argentinos: hechos policiales, narcotráfico, accidentes y
+  // el proceso judicial que sigue a esos hechos. Incluye las palabras
+  // pedidas explícitamente ("policía", "delincuente", "narcotráfico",
+  // "detenido", "aprehendido", "policial") más sinónimos habituales.
+  Policial: [
+    // policía / policial
     'policía bonaerense',
     'policía',
     'policial',
@@ -53,13 +56,40 @@ const PALABRAS_CLAVE = {
     'patrullero',
     'uniformado',
     'destacamento',
+    // delincuente y sinónimos
+    'delincuente',
+    'delincuencia',
+    'malviviente',
+    'ladrón',
+    'ladrones',
+    // narcotráfico y sinónimos
+    'narcotráfico',
+    'narco',
+    'droga',
+    'cocaína',
+    'marihuana',
+    'paco',
+    'búnker',
+    'estupefacientes',
+    'kiosco de drogas',
+    // detenido / aprehendido y sinónimos
     'detenido',
     'detención',
-    'arresto',
     'aprehendido',
+    'aprehensión',
+    'arresto',
+    'arrestado',
     'capturado',
     'prófugo',
     'allanamiento',
+    // otros hechos policiales habituales
+    'robo',
+    'hurto',
+    'asalto',
+    'homicidio',
+    'asesinato',
+    'crimen',
+    'criminal',
     'accidente',
     'choque',
     'colisión',
@@ -69,6 +99,7 @@ const PALABRAS_CLAVE = {
     'despiste',
     'alcoholemia',
     'control vehicular',
+    // proceso judicial derivado de un hecho policial
     'juicio',
     'condena',
     'fiscal',
@@ -79,18 +110,7 @@ const PALABRAS_CLAVE = {
     'procesado',
     'elevó a juicio',
   ],
-  'Narcotráfico': [
-    'droga',
-    'narcotráfico',
-    'narco',
-    'cocaína',
-    'marihuana',
-    'paco',
-    'búnker',
-    'estupefacientes',
-    'kiosco de drogas',
-  ],
-  'Política': [
+  'Político': [
     'gobernador',
     'intendente',
     'legislatura',
@@ -106,15 +126,41 @@ const PALABRAS_CLAVE = {
     'sesión legislativa',
     'oficialismo',
     'oposición política',
+    'partido político',
+    'campaña electoral',
+    'congreso nacional',
+    'cámara de diputados',
+    'cámara de senadores',
   ],
-  Internacional: [
-    'estados unidos',
-    'unión europea',
-    'medio oriente',
-    'naciones unidas',
-    'ucrania',
-    'rusia',
-    'internacional',
+  Deportivo: [
+    'fútbol',
+    'futbolista',
+    'gol',
+    'goles',
+    'partido de fútbol',
+    'torneo',
+    'liga profesional',
+    'campeonato',
+    'selección argentina',
+    'mundial de fútbol',
+    'boca juniors',
+    'river plate',
+    'estadio',
+    'cancha de fútbol',
+    'básquet',
+    'básquetbol',
+    'tenis',
+    'rugby',
+    'hockey',
+    'atletismo',
+    'director técnico',
+    'árbitro',
+    'clásico',
+    'copa libertadores',
+    'copa argentina',
+    'deportivo',
+    'jugador de fútbol',
+    'gimnasia',
   ],
 };
 

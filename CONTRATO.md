@@ -136,7 +136,7 @@ indique explícitamente abajo. Fechas siempre ISO 8601.
 {
   "noticias": [ { "id":1, "titulo":"...", "resumen":"...", "imagen_url":"...",
     "link_original":"...", "fecha_publicacion":"2026-09-18T10:00:00.000Z",
-    "fuente_nombre":"...", "categoria":"Seguridad",
+    "fuente_nombre":"...", "categoria":"Policial",
     "destacada":false, "es_propia":false } ],
   "total": 143, "pagina": 1, "totalPaginas": 8
 }
@@ -151,7 +151,7 @@ hay 3 y se marca una cuarta, se desmarca automáticamente la más vieja.
 **GET /api/noticias/:id** → detalle de una noticia. Incrementa `vistas`.
 404 con el formato de error si no existe o está oculta.
 
-**GET /api/categorias** → `["Seguridad","Narcotráfico","Política","Internacional"]`
+**GET /api/categorias** → `["Policial","Político","Deportivo"]`
 ('General' existe como categoría interna de reserva del categorizador,
 pero no se expone acá: no es una sección navegable del portal.)
 (lista fija, ver categorizador).
@@ -292,7 +292,7 @@ internamente y opcionalmente A) exporta:
 ```js
 module.exports = {
   categorizar(titulo, resumen) { /* devuelve el nombre de categoría, string */ },
-  CATEGORIAS: ['Seguridad','Narcotráfico','Política','Internacional','General'],
+  CATEGORIAS: ['Policial','Político','Deportivo','General'],
 };
 ```
 

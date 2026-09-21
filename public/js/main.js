@@ -11,10 +11,9 @@
 
   var IMAGEN_PLACEHOLDER = 'img/placeholder.svg';
   var CATEGORIAS_POR_DEFECTO = [
-    'Seguridad',
-    'Narcotráfico',
-    'Política',
-    'Internacional'
+    'Policial',
+    'Político',
+    'Deportivo'
   ];
 
   // Estado de la vista de listado/búsqueda de noticias.
@@ -279,7 +278,7 @@
       return;
     }
     vaciar(elListaCategorias);
-    elListaCategorias.appendChild(crearBotonCategoria('Todas', ''));
+    elListaCategorias.appendChild(crearBotonCategoria('Todo', ''));
     CATEGORIAS_POR_DEFECTO.forEach(function (categoria) {
       elListaCategorias.appendChild(crearBotonCategoria(categoria, categoria));
     });
@@ -292,7 +291,7 @@
           return;
         }
         vaciar(elListaCategorias);
-        elListaCategorias.appendChild(crearBotonCategoria('Todas', ''));
+        elListaCategorias.appendChild(crearBotonCategoria('Todo', ''));
         categorias.forEach(function (categoria) {
           elListaCategorias.appendChild(crearBotonCategoria(categoria, categoria));
         });
@@ -574,7 +573,7 @@
   function ejecutarBusquedaDesdeInput() {
     var texto = elInputBusqueda.value.trim();
     if (texto === '') {
-      // Sin texto de búsqueda: se vuelve al listado general (categoría "Todas"),
+      // Sin texto de búsqueda: se vuelve al listado general (categoría "Todo"),
       // para que el filtro de categoría quede consistente con lo que se ve marcado.
       estado.modo = 'listado';
       estado.categoria = '';
@@ -587,7 +586,7 @@
     estado.modo = 'busqueda';
     estado.query = texto;
     estado.pagina = 1;
-    marcarCategoriaActiva(''); // en modo búsqueda no hay categoría "activa" visualmente distinta a "Todas"
+    marcarCategoriaActiva(''); // en modo búsqueda no hay categoría "activa" visualmente distinta a "Todo"
     cargarNoticias();
   }
 

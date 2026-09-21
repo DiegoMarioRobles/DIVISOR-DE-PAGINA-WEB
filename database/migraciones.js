@@ -227,6 +227,34 @@ function fusionarCategoriasViejasEnSeguridad() {
 }
 
 /**
+ * Fusiona la taxonomía anterior de 4 secciones ("Seguridad",
+ * "Narcotráfico", "Política", "Internacional") en la nueva taxonomía
+ * simplificada de 3 secciones que pidió el administrador: "Policial"
+ * (Seguridad + Narcotráfico), "Político" (Política) y "Deportivo"
+ * (categoría nueva, sin equivalente anterior). "Internacional" no tiene
+ * equivalente directo en la nueva taxonomía: las noticias ya guardadas
+ * pasan a "General" (siguen visibles en la pestaña "Todo" del portal,
+ * pero no en ninguna sección temática), y las fuentes que tenían esa
+ * categoría fija vuelven a modo automático para que el categorizador las
+ * reubique de acá en más.
+ */
+function migrarASeccionesPolicialPoliticoDeportivo() {
+  const viejasAPolicial = ['Seguridad', 'Narcotráfico'];
+  const marcadoresPolicial = viejasAPolicial.map(() => '?').join(',');
+  db.ejecutar(`UPDATE noticias SET categoria = 'Policial' WHERE categoria IN (${marcadoresPolicial})`, viejasAPolicial);
+  db.ejecutar(
+    `UPDATE fuentes SET categoria_default = 'Policial' WHERE categoria_default IN (${marcadoresPolicial})`,
+    viejasAPolicial
+  );
+
+  db.ejecutar("UPDATE noticias SET categoria = 'Político' WHERE categoria = 'Política'");
+  db.ejecutar("UPDATE fuentes SET categoria_default = 'Político' WHERE categoria_default = 'Política'");
+
+  db.ejecutar("UPDATE noticias SET categoria = 'General' WHERE categoria = 'Internacional'");
+  db.ejecutar("UPDATE fuentes SET categoria_default = NULL WHERE categoria_default = 'Internacional'");
+}
+
+/**
  * Renombra el portal a "El Observador" en instalaciones que todavía
  * tengan alguno de los nombres anteriores del proyecto ("Seguridad
  * Bonaerense", el original, o "La Huella", el segundo). Solo actualiza
@@ -255,6 +283,7 @@ function ejecutarMigraciones() {
   renombrarPortalSiSigueEnValorViejo();
   reasignarCategoriaDetenciones();
   fusionarCategoriasViejasEnSeguridad();
+  migrarASeccionesPolicialPoliticoDeportivo();
 }
 
 module.exports = { ejecutarMigraciones };
