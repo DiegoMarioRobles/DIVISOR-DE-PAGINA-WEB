@@ -222,8 +222,16 @@ router.get(
   })
 );
 
-// GET /api/noticias/destacada -> array de hasta MAX_DESTACADAS noticias
+// GET /api/noticias/destacada -> array de hasta CANDIDATOS_DESTACADA
+// noticias. MAX_DESTACADAS (3) es cuántas se terminan MOSTRANDO en la
+// portada; se piden más de las que hacen falta para que el cliente
+// pueda elegir las primeras 3 cuya imagen realmente cargue en el
+// navegador (ver public/js/main.js, cargarDestacada) sin depender de
+// que haya publicidad de relleno cargada — el relleno publicitario
+// sigue existiendo como último recurso, para cuando ni con este margen
+// alcanza.
 const MAX_DESTACADAS = 3;
+const CANDIDATOS_DESTACADA = 8;
 
 router.get(
   '/noticias/destacada',
@@ -232,6 +240,9 @@ router.get(
     // imagen (se ven mal en las tarjetas grandes de "destacada").
     const condicionImagen = "imagen_url IS NOT NULL AND imagen_url != ''";
 
+    // Las marcadas a mano por el administrador van siempre primero (son
+    // como máximo MAX_DESTACADAS, es el límite que ya impone el panel
+    // admin al marcarlas).
     const marcadas = db.consultar(
       `SELECT * FROM noticias WHERE oculta = 0 AND destacada = 1 AND ${condicionImagen}
        ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
@@ -239,7 +250,7 @@ router.get(
     );
 
     let destacadas = marcadas;
-    if (destacadas.length < MAX_DESTACADAS) {
+    if (destacadas.length < CANDIDATOS_DESTACADA) {
       const idsExcluidos = destacadas.map((n) => n.id);
       const condicionExcluir = idsExcluidos.length
         ? `AND id NOT IN (${idsExcluidos.map(() => '?').join(',')})`
@@ -247,7 +258,7 @@ router.get(
       const relleno = db.consultar(
         `SELECT * FROM noticias WHERE oculta = 0 AND ${condicionImagen} ${condicionExcluir}
          ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
-        [...idsExcluidos, MAX_DESTACADAS - destacadas.length]
+        [...idsExcluidos, CANDIDATOS_DESTACADA - destacadas.length]
       );
       destacadas = destacadas.concat(relleno);
     }

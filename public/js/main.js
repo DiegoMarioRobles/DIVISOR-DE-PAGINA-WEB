@@ -661,13 +661,20 @@
 
     obtenerJSON('/api/noticias/destacada')
       .then(function (destacadas) {
+        // El servidor manda más candidatas (CANDIDATOS_DESTACADA en
+        // routes/publico.js) de las que se van a mostrar (MAX_DESTACADAS):
+        // se precargan todas en paralelo y se toman, en el mismo orden de
+        // prioridad que mandó el servidor, las primeras 3 cuya imagen
+        // carga bien — así alcanza con que 3 de las 8 candidatas tengan
+        // una imagen válida, no las 3 primeras puntuales.
         var lista = Array.isArray(destacadas) ? destacadas : [];
         return Promise.all(lista.map(function (noticia) {
           return precargarImagen(noticia.imagen_url);
         })).then(function (resultados) {
-          return lista.filter(function (noticia, indice) {
+          var conImagenOk = lista.filter(function (noticia, indice) {
             return resultados[indice];
           });
+          return conImagenOk.slice(0, MAX_DESTACADAS);
         });
       })
       .then(function (destacadasConImagen) {

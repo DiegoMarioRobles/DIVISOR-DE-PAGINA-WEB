@@ -161,17 +161,23 @@ omitido = sin filtro de fecha. 400 si no es uno de esos valores.
 }
 ```
 
-**GET /api/noticias/destacada** → array de hasta 3 noticias con imagen
-(las marcadas `destacada`, completando con las más recientes si hay
-menos de 3 marcadas). El panel admin permite marcar hasta 3 noticias
-como destacadas a la vez (`PATCH /api/admin/noticias/:id/destacar`); si
-ya hay 3 y se marca una cuarta, se desmarca automáticamente la más
-vieja. El front (`public/js/main.js`, `cargarDestacada`) precarga cada
-imagen antes de mostrar la tarjeta (evita el caso de una imagen que
-figura en la base pero rompe al cargar), y si después de eso quedan
-menos de 3 con imagen que carga bien, completa los huecos con
-publicidades de `GET /api/publicidades?posicion=destacada` — así la
-portada nunca queda con espacio vacío o desbalanceado arriba de todo.
+**GET /api/noticias/destacada** → array de hasta 8 noticias candidatas
+con imagen (las marcadas `destacada` primero, completando con las más
+recientes). Se piden más de las 3 que se terminan mostrando a propósito
+— así el front puede elegir, de ese pool más grande, las primeras 3
+cuya imagen realmente carga en el navegador, sin depender de que las 3
+más prioritarias en particular tengan una imagen que funcione. El panel
+admin permite marcar hasta 3 noticias como destacadas a la vez (`PATCH
+/api/admin/noticias/:id/destacar`); si ya hay 3 y se marca una cuarta,
+se desmarca automáticamente la más vieja.
+
+El front (`public/js/main.js`, `cargarDestacada`) precarga la imagen de
+cada candidata (evita el caso de una imagen que figura en la base pero
+rompe al cargar) y se queda con las primeras 3 que cargaron bien,
+respetando el orden de prioridad que mandó el servidor. Si aun así
+quedan menos de 3, completa los huecos con publicidades de `GET
+/api/publicidades?posicion=destacada` — así la portada nunca queda con
+espacio vacío o desbalanceado arriba de todo.
 
 **GET /api/noticias/:id** → detalle de una noticia. Incrementa `vistas`.
 404 con el formato de error si no existe o está oculta.
