@@ -195,8 +195,11 @@
     }
     if (tema.logo_url && elLogoIconoPersonalizado && elLogoIconoSvg) {
       elLogoIconoPersonalizado.src = tema.logo_url;
-      elLogoIconoPersonalizado.hidden = false;
-      elLogoIconoSvg.hidden = true;
+      // display inline en vez de .hidden: hay una regla CSS "img {
+      // display: block }" que le gana al [hidden] del navegador (ver
+      // comentario en public/css/style.css, #logo-icono-personalizado).
+      elLogoIconoPersonalizado.style.display = 'block';
+      elLogoIconoSvg.style.display = 'none';
     }
     if (tema.texto_legal_footer && elTextoLegal) {
       elTextoLegal.textContent = tema.texto_legal_footer;

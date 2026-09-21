@@ -122,10 +122,16 @@ button {
 
 .site-header-hero {
   position: relative;
+  /* Los tres colores de este degradado seguían al --color-acento/
+     --color-fondo viejos (rojo y azul) pero escritos como literales
+     fijos: cambiar el color desde el panel admin no los tocaba. Con
+     color-mix() quedan atados a las variables, así que si el
+     administrador cambia el acento o el fondo, este degradado también
+     cambia solo. */
   background:
-    radial-gradient(ellipse 65% 90% at 12% 25%, rgba(224, 38, 58, 0.32), transparent 60%),
-    radial-gradient(ellipse 65% 90% at 88% 75%, rgba(26, 35, 126, 0.5), transparent 60%),
-    linear-gradient(180deg, #05060c 0%, #0a0e1a 100%);
+    radial-gradient(ellipse 65% 90% at 12% 25%, color-mix(in srgb, var(--color-acento) 32%, transparent), transparent 60%),
+    radial-gradient(ellipse 65% 90% at 88% 75%, color-mix(in srgb, var(--color-acento) 22%, transparent), transparent 60%),
+    linear-gradient(180deg, color-mix(in srgb, var(--color-fondo) 70%, black) 0%, var(--color-fondo) 100%);
   padding: 1.6rem 1rem 1.4rem;
   display: flex;
   justify-content: center;
@@ -155,6 +161,14 @@ button {
 }
 
 #logo-icono-personalizado {
+  /* display:none explícito por selector, no el atributo `hidden`: la
+     regla "img { display: block }" de arriba es del mismo origen
+     (autor) que la de `hidden` del navegador, y en la cascada CSS un
+     empate de origen lo gana el autor — así que `hidden` solo no
+     alcanza para ocultar un <img> (por eso se veía como un recuadro
+     vacío en vez de desaparecer). JS lo muestra con display:block
+     inline cuando hay un logo_url configurado. */
+  display: none;
   width: 52px;
   height: 47px;
   object-fit: contain;
