@@ -650,16 +650,16 @@ function renderizarFuentes(lista) {
     <tr>
       <td>${escaparHtml(f.nombre)}</td>
       <td class="celda-url"><a href="${escaparHtml(f.url_rss)}" target="_blank" rel="noopener noreferrer">${escaparHtml(f.url_rss)}</a></td>
-      <td>${f.categoria_default ? escaparHtml(f.categoria_default) : '<span class="texto-secundario">Automático</span>'}</td>
-      <td><button type="button" class="btn-toggle ${f.activa ? 'activo-si' : ''}" data-accion="activar" data-id="${f.id}">${f.activa ? '✅ Activa' : '⛔ Inactiva'}</button></td>
-      <td>${f.ultima_lectura ? formatearFecha(f.ultima_lectura) : 'Nunca'}</td>
-      <td>${f.total_noticias ?? 0}</td>
-      <td class="celda-error">${f.ultimo_error ? `<span class="texto-error">${escaparHtml(f.ultimo_error)}</span>` : '—'}</td>
       <td class="celda-acciones">
         <button type="button" class="btn-accion" data-accion="actualizar" data-id="${f.id}" title="Actualizar ahora">🔄</button>
         <button type="button" class="btn-accion" data-accion="editar" data-id="${f.id}" title="Editar">✏️</button>
         <button type="button" class="btn-accion btn-accion-peligro" data-accion="eliminar" data-id="${f.id}" title="Eliminar">🗑️</button>
       </td>
+      <td><button type="button" class="btn-toggle ${f.activa ? 'activo-si' : ''}" data-accion="activar" data-id="${f.id}">${f.activa ? '✅ Activa' : '⛔ Inactiva'}</button></td>
+      <td>${f.ultima_lectura ? formatearFecha(f.ultima_lectura) : 'Nunca'}</td>
+      <td>${f.total_noticias ?? 0}</td>
+      <td class="celda-error">${f.ultimo_error ? `<span class="texto-error">${escaparHtml(f.ultimo_error)}</span>` : '—'}</td>
+      <td>${f.categoria_default ? escaparHtml(f.categoria_default) : '<span class="texto-secundario">Automático</span>'}</td>
     </tr>`).join('');
 }
 
