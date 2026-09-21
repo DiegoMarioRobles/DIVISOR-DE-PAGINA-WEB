@@ -42,6 +42,11 @@
   var elFormBusqueda = document.getElementById('form-busqueda');
   var elInputBusqueda = document.getElementById('input-busqueda');
   var elLogoInicio = document.getElementById('logo-inicio');
+  var elLogoTexto = document.getElementById('logo-texto');
+  var elLogoIconoSvg = document.getElementById('logo-icono-svg');
+  var elLogoIconoPersonalizado = document.getElementById('logo-icono-personalizado');
+  var elFooterNombre = document.getElementById('footer-nombre');
+  var elTextoLegal = document.getElementById('texto-legal');
   var elTickerClima = document.getElementById('ticker-clima');
   var elTickerDolar = document.getElementById('ticker-dolar');
   var elFormSuscripcion = document.getElementById('form-suscripcion');
@@ -153,6 +158,57 @@
       imgEl.onerror = null;
       imgEl.src = IMAGEN_PLACEHOLDER;
     };
+  }
+
+  // ------------------------------------------------------------------
+  // Apariencia (título, logo, colores, tamaño de letra) configurada
+  // desde el panel admin (Configuración → Apariencia). El HTML ya trae
+  // los valores por defecto escritos a mano como respaldo: si esto
+  // falla (sin red, servidor caído), el sitio se ve igual que siempre.
+  // ------------------------------------------------------------------
+
+  function aplicarTema(tema) {
+    if (!tema) {
+      return;
+    }
+    var raiz = document.documentElement;
+
+    if (tema.color_primario) {
+      raiz.style.setProperty('--color-primario', tema.color_primario);
+    }
+    if (tema.color_acento) {
+      raiz.style.setProperty('--color-acento', tema.color_acento);
+    }
+    if (tema.color_fondo) {
+      raiz.style.setProperty('--color-fondo', tema.color_fondo);
+    }
+    if (tema.tamano_fuente_base) {
+      raiz.style.fontSize = tema.tamano_fuente_base + 'px';
+    }
+
+    if (tema.nombre_portal) {
+      document.title = document.title.replace('El Observador', tema.nombre_portal);
+      if (elLogoTexto) elLogoTexto.textContent = tema.nombre_portal;
+      if (elFooterNombre) elFooterNombre.textContent = tema.nombre_portal;
+      if (elLogoInicio) elLogoInicio.setAttribute('aria-label', 'Ir al inicio de ' + tema.nombre_portal);
+      setMetaContenido('og:title', tema.nombre_portal);
+    }
+    if (tema.logo_url && elLogoIconoPersonalizado && elLogoIconoSvg) {
+      elLogoIconoPersonalizado.src = tema.logo_url;
+      elLogoIconoPersonalizado.hidden = false;
+      elLogoIconoSvg.hidden = true;
+    }
+    if (tema.texto_legal_footer && elTextoLegal) {
+      elTextoLegal.textContent = tema.texto_legal_footer;
+    }
+  }
+
+  function cargarTema() {
+    obtenerJSON('/api/tema')
+      .then(aplicarTema)
+      .catch(function (error) {
+        console.error('No se pudo cargar la apariencia personalizada, se usan los valores por defecto.', error);
+      });
   }
 
   // ------------------------------------------------------------------
@@ -893,6 +949,8 @@
   // ------------------------------------------------------------------
 
   function iniciar() {
+    cargarTema();
+
     actualizarReloj();
     setInterval(actualizarReloj, 1000);
 

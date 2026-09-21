@@ -12,7 +12,7 @@
   --color-blanco: #ffffff;
   --color-texto: #f2f3f7;
   --color-texto-suave: #9aa0c0;
-  --color-primario: #5b7fff;
+  --color-primario: #c9a635;
   --color-primario-oscuro: #10164f;
   --color-acento: #e0263a;
   --color-acento-oscuro: #b91c2c;
@@ -152,6 +152,12 @@ button {
 
 .logo-icono {
   flex-shrink: 0;
+}
+
+#logo-icono-personalizado {
+  width: 52px;
+  height: 47px;
+  object-fit: contain;
 }
 
 .buscador-form {

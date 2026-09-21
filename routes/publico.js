@@ -294,6 +294,37 @@ router.get(
   })
 );
 
+// Claves de "configuracion" seguras para exponer públicamente (lo visual
+// y el texto legal). Nunca se exponen acá claves operativas como
+// intervalo_rss_minutos o noticias_por_pagina.
+const CLAVES_TEMA_PUBLICAS = [
+  'nombre_portal',
+  'logo_url',
+  'color_primario',
+  'color_acento',
+  'color_fondo',
+  'tamano_fuente_base',
+  'texto_legal_footer',
+];
+
+// GET /api/tema -> apariencia configurada desde el panel admin
+// (Configuración → Apariencia), para que el portal público la aplique al
+// cargar (título, logo, colores, tamaño de letra, texto legal).
+router.get(
+  '/tema',
+  asyncHandler(async (req, res) => {
+    const filas = db.consultar(
+      `SELECT clave, valor FROM configuracion WHERE clave IN (${CLAVES_TEMA_PUBLICAS.map(() => '?').join(',')})`,
+      CLAVES_TEMA_PUBLICAS
+    );
+    const tema = {};
+    for (const fila of filas) {
+      tema[fila.clave] = fila.valor;
+    }
+    res.json(tema);
+  })
+);
+
 // GET /api/fuentes
 router.get(
   '/fuentes',

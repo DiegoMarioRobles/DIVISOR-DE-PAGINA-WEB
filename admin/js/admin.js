@@ -979,8 +979,10 @@ async function cargarConfig() {
     configCache = datos || {};
     document.getElementById('cfg-nombre-portal').value = configCache.nombre_portal || '';
     document.getElementById('cfg-logo-url').value = configCache.logo_url || '';
-    document.getElementById('cfg-color-primario').value = configCache.color_primario || '#1a237e';
+    document.getElementById('cfg-color-primario').value = configCache.color_primario || '#c9a635';
     document.getElementById('cfg-color-acento').value = configCache.color_acento || '#c62828';
+    document.getElementById('cfg-color-fondo').value = configCache.color_fondo || '#0a0e1a';
+    document.getElementById('cfg-tamano-fuente').value = configCache.tamano_fuente_base || '16';
     document.getElementById('cfg-intervalo-rss').value = configCache.intervalo_rss_minutos || 30;
     document.getElementById('cfg-noticias-pagina').value = configCache.noticias_por_pagina || 20;
     document.getElementById('cfg-texto-legal').value = configCache.texto_legal_footer || '';
@@ -1008,6 +1010,8 @@ async function manejarEnvioConfig(evento) {
     logo_url: document.getElementById('cfg-logo-url').value.trim(),
     color_primario: document.getElementById('cfg-color-primario').value,
     color_acento: document.getElementById('cfg-color-acento').value,
+    color_fondo: document.getElementById('cfg-color-fondo').value,
+    tamano_fuente_base: document.getElementById('cfg-tamano-fuente').value,
     intervalo_rss_minutos: intervalo,
     noticias_por_pagina: porPagina,
     texto_legal_footer: document.getElementById('cfg-texto-legal').value.trim(),

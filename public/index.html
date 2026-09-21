@@ -24,7 +24,8 @@
   <header class="site-header" id="encabezado">
     <div class="site-header-hero">
       <button type="button" id="logo-inicio" class="logo-link" aria-label="Ir al inicio de El Observador">
-        <svg class="logo-icono" aria-hidden="true" viewBox="0 0 100 90" width="52" height="47" fill="none">
+        <img id="logo-icono-personalizado" class="logo-icono" alt="" hidden>
+        <svg id="logo-icono-svg" class="logo-icono" aria-hidden="true" viewBox="0 0 100 90" width="52" height="47" fill="none">
           <path d="M4 62 L70 62" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
           <g fill="#a99a3a">
             <rect x="68" y="56" width="10" height="8"/>
@@ -32,14 +33,14 @@
             <rect x="76" y="40" width="10" height="8"/>
           </g>
           <path d="M6 42 Q50 8 94 42 Q50 64 6 42 Z" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="47" cy="41" r="15" fill="#2f7bb0" stroke="#ffffff" stroke-width="2.8"/>
-          <circle cx="47" cy="41" r="6.5" fill="#0a0e1a" stroke="#ffffff" stroke-width="1"/>
-          <path d="M56 46 C60 30 70 16 90 4 C86 24 76 40 62 52 Z" fill="#2f7bb0" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round"/>
+          <circle cx="47" cy="41" r="15" fill="var(--color-acento)" stroke="#ffffff" stroke-width="2.8"/>
+          <circle cx="47" cy="41" r="6.5" fill="var(--color-fondo)" stroke="#ffffff" stroke-width="1"/>
+          <path d="M56 46 C60 30 70 16 90 4 C86 24 76 40 62 52 Z" fill="var(--color-acento)" stroke="#ffffff" stroke-width="3.2" stroke-linejoin="round"/>
           <path d="M58 44 L88 8" stroke="#ffffff" stroke-width="1.4"/>
           <path d="M62 52 L52 60" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
           <path d="M91 24 L97 30 L91 36" stroke="#ffffff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span class="logo-texto">El Observador</span>
+        <span class="logo-texto" id="logo-texto">El Observador</span>
       </button>
     </div>
 
@@ -140,7 +141,7 @@
   <footer class="site-footer" id="pie-pagina">
     <div class="footer-contenido">
       <div class="footer-columna footer-marca">
-        <p class="footer-nombre">El Observador</p>
+        <p class="footer-nombre" id="footer-nombre">El Observador</p>
         <p class="footer-descripcion">Noticias de seguridad de la provincia de Buenos Aires.</p>
         <ul class="redes-lista" aria-label="Redes sociales">
           <li>

@@ -112,11 +112,20 @@ Claves de `configuracion` (valores por defecto que debe insertar el seed):
 |---|---|
 | nombre_portal | El Observador |
 | logo_url | (vacío) |
-| color_primario | #1a237e |
+| color_primario | #c9a635 |
 | color_acento | #c62828 |
+| color_fondo | #0a0e1a |
+| tamano_fuente_base | 16 (px; uno de: 14, 16, 18, 20) |
 | intervalo_rss_minutos | 30 |
 | noticias_por_pagina | 20 |
 | texto_legal_footer | Este sitio agrega noticias de terceros con fines informativos. Cada tarjeta enlaza a la fuente original. No se reproduce el contenido completo de las notas. |
+
+`nombre_portal`/`logo_url`/`color_primario`/`color_acento`/`color_fondo`/
+`tamano_fuente_base`/`texto_legal_footer` son 100% editables desde el panel
+admin (Configuración → Apariencia, `PUT /api/admin/config`) y el portal
+público los aplica en tiempo real al cargar (ver `GET /api/tema` abajo y
+`public/js/main.js`, función `aplicarTema`). Ninguno es azul por defecto
+a propósito: el administrador pidió que la interfaz no lo sea.
 
 ---
 
@@ -163,6 +172,19 @@ pero no se expone acá: no es una sección navegable del portal.)
 (lista fija, ver categorizador).
 
 **GET /api/buscar?q=texto&pagina=1** → mismo shape que `/api/noticias`.
+
+**GET /api/tema** → apariencia configurada desde el panel admin, para
+que el portal público la aplique al cargar:
+```json
+{
+  "nombre_portal": "El Observador", "logo_url": "",
+  "color_primario": "#c9a635", "color_acento": "#c62828",
+  "color_fondo": "#0a0e1a", "tamano_fuente_base": "16",
+  "texto_legal_footer": "..."
+}
+```
+Subconjunto seguro de `configuracion` (nunca expone claves operativas
+como `intervalo_rss_minutos`).
 
 **GET /api/fuentes** → fuentes activas, solo `id, nombre, sitio_web`.
 

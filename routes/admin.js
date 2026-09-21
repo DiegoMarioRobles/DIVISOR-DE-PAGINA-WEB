@@ -24,10 +24,17 @@ const CLAVES_CONFIGURACION_VALIDAS = [
   'logo_url',
   'color_primario',
   'color_acento',
+  'color_fondo',
+  'tamano_fuente_base',
   'intervalo_rss_minutos',
   'noticias_por_pagina',
   'texto_legal_footer',
 ];
+
+// Tamaños de letra permitidos (px), aplicados como font-size del <html>
+// del portal público: como el resto del CSS está en unidades rem, esto
+// escala proporcionalmente todo el sitio de una sola vez.
+const TAMANOS_FUENTE_VALIDOS = ['14', '16', '18', '20'];
 
 // ---------------------------------------------------------------------------
 // Helpers de validación / sanitización
@@ -876,6 +883,22 @@ router.put(
         throw new CodigoError('El campo "color_acento" debe ser un color hexadecimal (#rrggbb).', 400);
       }
       valoresAGuardar.color_acento = cuerpo.color_acento;
+    }
+    if (cuerpo.color_fondo !== undefined) {
+      if (typeof cuerpo.color_fondo !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(cuerpo.color_fondo)) {
+        throw new CodigoError('El campo "color_fondo" debe ser un color hexadecimal (#rrggbb).', 400);
+      }
+      valoresAGuardar.color_fondo = cuerpo.color_fondo;
+    }
+    if (cuerpo.tamano_fuente_base !== undefined) {
+      const tamano = String(cuerpo.tamano_fuente_base);
+      if (!TAMANOS_FUENTE_VALIDOS.includes(tamano)) {
+        throw new CodigoError(
+          `El campo "tamano_fuente_base" debe ser uno de: ${TAMANOS_FUENTE_VALIDOS.join(', ')}.`,
+          400
+        );
+      }
+      valoresAGuardar.tamano_fuente_base = tamano;
     }
     if (cuerpo.intervalo_rss_minutos !== undefined) {
       const minutos = parseInt(cuerpo.intervalo_rss_minutos, 10);

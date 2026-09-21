@@ -108,11 +108,18 @@ const SENTENCIAS_TABLAS = [
 ];
 
 // Valores por defecto de la tabla "configuracion" (CONTRATO.md, sección 1).
+// color_primario/color_acento/color_fondo/tamano_fuente_base son 100%
+// editables desde el panel admin (Configuración → Apariencia); estos son
+// solo los valores iniciales antes de que el administrador los cambie.
+// A propósito ninguno es azul: era el color por defecto original y el
+// administrador pidió específicamente que no lo sea.
 const CONFIGURACION_POR_DEFECTO = {
   nombre_portal: 'El Observador',
   logo_url: '',
-  color_primario: '#1a237e',
+  color_primario: '#c9a635',
   color_acento: '#c62828',
+  color_fondo: '#0a0e1a',
+  tamano_fuente_base: '16',
   intervalo_rss_minutos: '30',
   noticias_por_pagina: '20',
   texto_legal_footer:
@@ -255,6 +262,20 @@ function migrarASeccionesPolicialPoliticoDeportivo() {
 }
 
 /**
+ * El color primario por defecto era azul (#1a237e) y el administrador
+ * pidió específicamente que la interfaz no sea azul. Actualiza ese valor
+ * al nuevo default (dorado) en instalaciones que ya tenían el azul viejo
+ * guardado desde antes de este cambio — pero solo si sigue siendo
+ * exactamente ese valor original, para no pisar un color que el
+ * administrador ya haya elegido a mano desde el panel.
+ */
+function corregirColorPrimarioAzul() {
+  db.ejecutar(
+    "UPDATE configuracion SET valor = '#c9a635' WHERE clave = 'color_primario' AND valor = '#1a237e'"
+  );
+}
+
+/**
  * Renombra el portal a "El Observador" en instalaciones que todavía
  * tengan alguno de los nombres anteriores del proyecto ("Seguridad
  * Bonaerense", el original, o "La Huella", el segundo). Solo actualiza
@@ -281,6 +302,7 @@ function ejecutarMigraciones() {
   sembrarConfiguracion();
   sembrarFuentes();
   renombrarPortalSiSigueEnValorViejo();
+  corregirColorPrimarioAzul();
   reasignarCategoriaDetenciones();
   fusionarCategoriasViejasEnSeguridad();
   migrarASeccionesPolicialPoliticoDeportivo();
