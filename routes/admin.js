@@ -147,6 +147,22 @@ function aBooleanoDB(valor) {
   return valor ? 1 : 0;
 }
 
+/**
+ * Valida un monto monetario opcional (ej. `monto_mensual` de una
+ * publicidad): número finito >= 0, o null/undefined/'' para "sin dato".
+ * Es solo un registro informativo del panel (para que el administrador
+ * sepa cuánto le factura a cada anunciante), no cobra ni procesa ningún
+ * pago real.
+ */
+function aMontoOpcional(valor, nombreCampo) {
+  if (valor === undefined || valor === null || valor === '') return null;
+  const n = Number(valor);
+  if (!Number.isFinite(n) || n < 0) {
+    throw new CodigoError(`El campo "${nombreCampo}" debe ser un número mayor o igual a 0.`, 400);
+  }
+  return n;
+}
+
 function esConstraintUnico(err) {
   return Boolean(err && typeof err.message === 'string' && err.message.includes('UNIQUE constraint failed'));
 }
@@ -744,15 +760,23 @@ router.post(
     if (!POSICIONES_PUBLICIDAD.includes(posicion)) {
       throw new CodigoError(`El campo "posicion" debe ser una de: ${POSICIONES_PUBLICIDAD.join(', ')}.`, 400);
     }
+    const empresaNombre = requerirString(cuerpo.empresa_nombre, 'empresa_nombre', { maxLength: 150 });
+    const empresaContacto =
+      cuerpo.empresa_contacto === undefined || cuerpo.empresa_contacto === ''
+        ? null
+        : requerirString(cuerpo.empresa_contacto, 'empresa_contacto', { maxLength: 200 });
+    const montoMensual = aMontoOpcional(cuerpo.monto_mensual, 'monto_mensual');
     const fechaInicio = validarFechaISO(cuerpo.fecha_inicio, 'fecha_inicio') || null;
     const fechaFin = validarFechaISO(cuerpo.fecha_fin, 'fecha_fin') || null;
     const activa = cuerpo.activa === undefined ? 1 : aBooleanoDB(cuerpo.activa);
 
     const resultado = db.ejecutar(
       `INSERT INTO publicidades
-         (nombre, imagen_url, link_destino, posicion, activa, fecha_inicio, fecha_fin)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, imagenUrl, linkDestino, posicion, activa, fechaInicio, fechaFin]
+         (nombre, imagen_url, link_destino, posicion, activa, fecha_inicio, fecha_fin,
+          empresa_nombre, empresa_contacto, monto_mensual)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, imagenUrl, linkDestino, posicion, activa, fechaInicio, fechaFin,
+        empresaNombre, empresaContacto, montoMensual]
     );
 
     const fila = db.consultarUno('SELECT * FROM publicidades WHERE id = ?', [resultado.lastInsertRowid]);
@@ -797,6 +821,22 @@ router.put(
     if (cuerpo.activa !== undefined) {
       campos.push('activa = ?');
       valores.push(aBooleanoDB(cuerpo.activa));
+    }
+    if (cuerpo.empresa_nombre !== undefined) {
+      campos.push('empresa_nombre = ?');
+      valores.push(requerirString(cuerpo.empresa_nombre, 'empresa_nombre', { maxLength: 150 }));
+    }
+    if (cuerpo.empresa_contacto !== undefined) {
+      campos.push('empresa_contacto = ?');
+      valores.push(
+        cuerpo.empresa_contacto === null || cuerpo.empresa_contacto === ''
+          ? null
+          : requerirString(cuerpo.empresa_contacto, 'empresa_contacto', { maxLength: 200 })
+      );
+    }
+    if (cuerpo.monto_mensual !== undefined) {
+      campos.push('monto_mensual = ?');
+      valores.push(aMontoOpcional(cuerpo.monto_mensual, 'monto_mensual'));
     }
     if (cuerpo.fecha_inicio !== undefined) {
       campos.push('fecha_inicio = ?');

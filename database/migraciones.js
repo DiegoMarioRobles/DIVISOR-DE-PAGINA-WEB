@@ -71,6 +71,9 @@ const SENTENCIAS_TABLAS = [
     clicks INTEGER NOT NULL DEFAULT 0,
     fecha_inicio TEXT,
     fecha_fin TEXT,
+    empresa_nombre TEXT,
+    empresa_contacto TEXT,
+    monto_mensual REAL,
     creada_en TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
 
@@ -331,6 +334,9 @@ function renombrarPortalSiSigueEnValorViejo() {
 function ejecutarMigraciones() {
   crearTablas();
   agregarColumnaSiFalta('fuentes', 'categoria_default', 'TEXT');
+  agregarColumnaSiFalta('publicidades', 'empresa_nombre', 'TEXT');
+  agregarColumnaSiFalta('publicidades', 'empresa_contacto', 'TEXT');
+  agregarColumnaSiFalta('publicidades', 'monto_mensual', 'REAL');
   sembrarUsuarioAdmin();
   sembrarConfiguracion();
   sembrarFuentes();

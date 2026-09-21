@@ -48,7 +48,13 @@
       <span class="ticker-item ticker-fecha">
         <time id="reloj" datetime=""></time>
       </span>
-      <span class="ticker-item ticker-clima" id="ticker-clima" hidden></span>
+      <span class="ticker-item ticker-clima-grupo">
+        <label for="selector-localidad" class="sr-only">Elegir localidad del pronóstico</label>
+        <select id="selector-localidad" class="selector-localidad" aria-label="Localidad del pronóstico">
+          <!-- Se completa dinámicamente vía JS con GET /api/localidades -->
+        </select>
+        <span class="ticker-clima" id="ticker-clima" hidden></span>
+      </span>
       <span class="ticker-item ticker-dolar" id="ticker-dolar" hidden></span>
 
       <form id="form-busqueda" class="buscador-form" role="search" autocomplete="off">
@@ -136,13 +142,6 @@
           <div id="publicidades-sidebar" class="publicidades-sidebar">
             <!-- Se completa dinámicamente vía JS con GET /api/publicidades?posicion=sidebar -->
           </div>
-        </section>
-
-        <section class="sidebar-bloque" aria-labelledby="titulo-fuentes">
-          <h2 id="titulo-fuentes" class="sidebar-titulo">Nuestras fuentes</h2>
-          <ul id="lista-fuentes" class="lista-fuentes">
-            <!-- Se completa dinámicamente vía JS con GET /api/fuentes -->
-          </ul>
         </section>
       </aside>
     </div>

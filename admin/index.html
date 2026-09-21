@@ -162,9 +162,9 @@
       <div class="tabla-scroll">
         <table class="tabla">
           <thead>
-            <tr><th>Nombre</th><th>Posición</th><th>Vigencia</th><th>Estado</th><th>Impresiones</th><th>Clicks</th><th>CTR</th><th>Acciones</th></tr>
+            <tr><th>Nombre</th><th>Empresa</th><th>Contacto</th><th>Monto mensual</th><th>Posición</th><th>Vigencia</th><th>Estado</th><th>Impresiones</th><th>Clicks</th><th>CTR</th><th>Acciones</th></tr>
           </thead>
-          <tbody id="tabla-publicidades-body"><tr><td colspan="8" class="celda-vacia">Cargando…</td></tr></tbody>
+          <tbody id="tabla-publicidades-body"><tr><td colspan="11" class="celda-vacia">Cargando…</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -352,8 +352,23 @@
     <form id="form-publicidad" novalidate>
       <input type="hidden" id="publicidad-id">
       <div class="campo">
-        <label for="publicidad-nombre">Nombre</label>
+        <label for="publicidad-nombre">Nombre de la campaña</label>
         <input type="text" id="publicidad-nombre" maxlength="120" required>
+      </div>
+      <h3>Anunciante</h3>
+      <div class="fila-formulario">
+        <div class="campo">
+          <label for="publicidad-empresa">Empresa</label>
+          <input type="text" id="publicidad-empresa" maxlength="150" required>
+        </div>
+        <div class="campo">
+          <label for="publicidad-contacto">Contacto (email o teléfono)</label>
+          <input type="text" id="publicidad-contacto" maxlength="200">
+        </div>
+      </div>
+      <div class="campo">
+        <label for="publicidad-monto">Monto mensual acordado (ARS, opcional — solo a modo de registro, no procesa pagos)</label>
+        <input type="number" id="publicidad-monto" min="0" step="0.01" placeholder="0.00">
       </div>
       <div class="campo">
         <label for="publicidad-imagen">URL de imagen</label>

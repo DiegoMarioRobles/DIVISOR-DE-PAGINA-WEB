@@ -61,15 +61,18 @@ CREATE TABLE IF NOT EXISTS fuentes (
 
 CREATE TABLE IF NOT EXISTS publicidades (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nombre TEXT NOT NULL,
+  nombre TEXT NOT NULL,             -- nombre de la campaña
   imagen_url TEXT NOT NULL,
   link_destino TEXT NOT NULL,
-  posicion TEXT NOT NULL, -- header | sidebar | entre-noticias | footer
+  posicion TEXT NOT NULL,           -- header | sidebar | entre-noticias | footer
   activa INTEGER NOT NULL DEFAULT 1,
   impresiones INTEGER NOT NULL DEFAULT 0,
   clicks INTEGER NOT NULL DEFAULT 0,
   fecha_inicio TEXT,
   fecha_fin TEXT,
+  empresa_nombre TEXT,              -- anunciante (obligatorio al crear desde el panel)
+  empresa_contacto TEXT,            -- email/teléfono del anunciante, opcional
+  monto_mensual REAL,               -- solo registro informativo, no procesa pagos
   creada_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -190,11 +193,20 @@ que el portal público la aplique al cargar:
 Subconjunto seguro de `configuracion` (nunca expone claves operativas
 como `intervalo_rss_minutos`).
 
-**GET /api/fuentes** → fuentes activas, solo `id, nombre, sitio_web`.
+**GET /api/fuentes** → fuentes activas, solo `id, nombre, sitio_web`. Ya
+no se muestra en ningún lado del portal público (a pedido del
+administrador se sacó el bloque "Nuestras fuentes" del sidebar), pero el
+endpoint se deja disponible por si se necesita en el futuro.
 
-**GET /api/clima-dolar** → ticker de clima (La Plata) y cotización del
-dólar, para el header del portal. Siempre responde 200 (nunca 500): si
-alguna de las dos fuentes externas falla, esa parte viene en `null`.
+**GET /api/localidades** → lista fija de localidades para el selector de
+clima del ticker: `[{"clave":"la-plata","nombre":"La Plata"}, ...]`
+(fuente de verdad: `services/climaDolarService.js`, `LOCALIDADES`).
+
+**GET /api/clima-dolar?localidad=la-plata** → ticker de clima (de la
+localidad pedida; `la-plata` si se omite o no es una de
+`GET /api/localidades`) y cotización del dólar (la misma para cualquier
+localidad), para el header del portal. Siempre responde 200 (nunca 500):
+si alguna de las dos fuentes externas falla, esa parte viene en `null`.
 ```json
 {
   "clima": { "temperatura": 18, "humedad": 60, "viento": 11 },
@@ -202,11 +214,14 @@ alguna de las dos fuentes externas falla, esa parte viene en `null`.
     "oficial": { "compra": 1030, "venta": 1035 },
     "blue": { "compra": 1050, "venta": 1055 }
   },
+  "localidad": "la-plata",
   "actualizado": "2026-09-18T15:00:00.000Z"
 }
 ```
-Cacheado 10 minutos en el servidor (`services/climaDolarService.js`) para
-no golpear las APIs externas (Open-Meteo y Bluelytics) en cada visita.
+Clima cacheado 10 minutos por localidad, dólar cacheado 10 minutos una
+sola vez (es un valor nacional único) — ambos en el servidor
+(`services/climaDolarService.js`), para no golpear las APIs externas
+(Open-Meteo y Bluelytics) en cada visita.
 
 **POST /api/suscriptores** → body `{email}`. Alta (o reactivación) de un
 suscriptor con doble opt-in: crea la fila con `confirmado=0` y manda un
@@ -249,7 +264,7 @@ vigentes (fecha_inicio <= hoy <= fecha_fin o sin fechas) para esa posición.
 - **POST /api/admin/fuentes/validar** → body `{url_rss}`. Intenta leer el feed con timeout corto y devuelve `{ "valido":true, "titulos":["...","...","..."] }` o `{ "valido":false, "mensaje":"..." }`. Nunca tira 500 por un feed caído.
 - **POST /api/admin/rss/actualizar** → body opcional `{fuente_id}` (si no viene, todas). Dispara lectura inmediata y devuelve resumen `{ fuentesLeidas, noticiasNuevas, errores:[...] }`.
 - **GET /api/admin/publicidades** → todas.
-- **POST /api/admin/publicidades** → crea.
+- **POST /api/admin/publicidades** → crea. Body: `{nombre, empresa_nombre, empresa_contacto, monto_mensual, imagen_url, link_destino, posicion, fecha_inicio, fecha_fin}` (`empresa_nombre` obligatorio — es el anunciante; `empresa_contacto` y `monto_mensual` opcionales, solo a modo de registro del panel, no procesan ningún pago real).
 - **PUT /api/admin/publicidades/:id** → edita.
 - **DELETE /api/admin/publicidades/:id** → elimina.
 - **GET /api/admin/config** → toda la tabla `configuracion` como objeto `{clave: valor}`.

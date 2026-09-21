@@ -9,7 +9,7 @@ const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const db = require('../database/db');
 const { asyncHandler, CodigoError } = require('../middleware/errores');
-const { obtenerClimaYDolar } = require('../services/climaDolarService');
+const { obtenerClimaYDolar, LOCALIDADES } = require('../services/climaDolarService');
 const { enviarMailConfirmacion } = require('../services/emailService');
 
 const router = express.Router();
@@ -505,12 +505,21 @@ router.post(
   })
 );
 
-// GET /api/clima-dolar
+// GET /api/clima-dolar?localidad=la-plata
 router.get(
   '/clima-dolar',
   asyncHandler(async (req, res) => {
-    const datos = await obtenerClimaYDolar();
+    const datos = await obtenerClimaYDolar(req.query.localidad);
     res.json(datos);
+  })
+);
+
+// GET /api/localidades -> lista fija para el selector del ticker público
+router.get(
+  '/localidades',
+  asyncHandler(async (req, res) => {
+    const lista = Object.entries(LOCALIDADES).map(([clave, { nombre }]) => ({ clave, nombre }));
+    res.json(lista);
   })
 );
 

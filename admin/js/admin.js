@@ -846,15 +846,25 @@ async function cargarPublicidades() {
   }
 }
 
+function formatearMonto(monto) {
+  if (monto === null || monto === undefined || monto === '') return '<span class="texto-secundario">—</span>';
+  const numero = Number(monto);
+  if (!Number.isFinite(numero)) return '<span class="texto-secundario">—</span>';
+  return '$' + numero.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function renderizarPublicidades(lista) {
   const tbody = document.getElementById('tabla-publicidades-body');
   if (!lista.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="celda-vacia">Todavía no hay publicidades cargadas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" class="celda-vacia">Todavía no hay publicidades cargadas.</td></tr>';
     return;
   }
   tbody.innerHTML = lista.map((p) => `
     <tr>
       <td>${escaparHtml(p.nombre)}</td>
+      <td>${p.empresa_nombre ? escaparHtml(p.empresa_nombre) : '<span class="texto-secundario">—</span>'}</td>
+      <td>${p.empresa_contacto ? escaparHtml(p.empresa_contacto) : '<span class="texto-secundario">—</span>'}</td>
+      <td>${formatearMonto(p.monto_mensual)}</td>
       <td>${escaparHtml(ETIQUETAS_POSICION[p.posicion] || p.posicion)}</td>
       <td>${formatearVigencia(p.fecha_inicio, p.fecha_fin)}</td>
       <td><button type="button" class="btn-toggle ${p.activa ? 'activo-si' : ''}" data-accion="activar" data-id="${p.id}">${p.activa ? '✅ Activa' : '⛔ Inactiva'}</button></td>
@@ -915,6 +925,10 @@ function abrirModalPublicidad(pub) {
   document.getElementById('publicidad-id').value = pub ? pub.id : '';
   document.getElementById('modal-publicidad-titulo').textContent = pub ? 'Editar publicidad' : 'Nueva publicidad';
   document.getElementById('publicidad-nombre').value = pub ? pub.nombre : '';
+  document.getElementById('publicidad-empresa').value = pub && pub.empresa_nombre ? pub.empresa_nombre : '';
+  document.getElementById('publicidad-contacto').value = pub && pub.empresa_contacto ? pub.empresa_contacto : '';
+  document.getElementById('publicidad-monto').value =
+    pub && pub.monto_mensual !== null && pub.monto_mensual !== undefined ? pub.monto_mensual : '';
   document.getElementById('publicidad-imagen').value = pub ? pub.imagen_url : '';
   document.getElementById('publicidad-link').value = pub ? pub.link_destino : '';
   document.getElementById('publicidad-posicion').value = pub ? pub.posicion : 'header';
@@ -938,8 +952,13 @@ async function manejarEnvioPublicidad(evento) {
     return;
   }
 
+  const montoTexto = document.getElementById('publicidad-monto').value.trim();
+
   const cuerpo = {
     nombre: document.getElementById('publicidad-nombre').value.trim(),
+    empresa_nombre: document.getElementById('publicidad-empresa').value.trim(),
+    empresa_contacto: document.getElementById('publicidad-contacto').value.trim() || null,
+    monto_mensual: montoTexto === '' ? null : Number(montoTexto),
     imagen_url: document.getElementById('publicidad-imagen').value.trim(),
     link_destino: document.getElementById('publicidad-link').value.trim(),
     posicion: document.getElementById('publicidad-posicion').value,

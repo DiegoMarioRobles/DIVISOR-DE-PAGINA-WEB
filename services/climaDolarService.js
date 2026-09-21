@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Clima de La Plata y cotización del dólar en Argentina, para el ticker
+ * Clima por localidad y cotización del dólar en Argentina, para el ticker
  * informativo del portal. Usa APIs públicas gratuitas (sin API key):
  * Open-Meteo para clima y Bluelytics para cotizaciones.
  *
@@ -15,12 +15,35 @@
  * romper toda la respuesta: el ticker debe degradarse con elegancia.
  */
 
-const LATITUD_LA_PLATA = -34.9214;
-const LONGITUD_LA_PLATA = -57.9544;
+// Localidades de cobertura del portal (coinciden con las zonas de
+// seeds/fuentes.js). La clave es la que usa el selector del ticker
+// público (`?localidad=`) y el panel admin no la gestiona: es una lista
+// fija a propósito, no hace falta que sea editable.
+const LOCALIDADES = {
+  'la-plata': { nombre: 'La Plata', lat: -34.9214, lon: -57.9544 },
+  quilmes: { nombre: 'Quilmes', lat: -34.7202, lon: -58.2545 },
+  'lomas-de-zamora': { nombre: 'Lomas de Zamora', lat: -34.7628, lon: -58.4008 },
+  avellaneda: { nombre: 'Avellaneda', lat: -34.6626, lon: -58.3654 },
+  'almirante-brown': { nombre: 'Almirante Brown', lat: -34.7995, lon: -58.3877 },
+  berisso: { nombre: 'Berisso', lat: -34.876, lon: -57.8842 },
+  'florencio-varela': { nombre: 'Florencio Varela', lat: -34.8172, lon: -58.2745 },
+  moron: { nombre: 'Morón', lat: -34.6534, lon: -58.6198 },
+  moreno: { nombre: 'Moreno', lat: -34.6421, lon: -58.7898 },
+  'san-isidro': { nombre: 'San Isidro', lat: -34.4708, lon: -58.5251 },
+  tigre: { nombre: 'Tigre', lat: -34.4264, lon: -58.58 },
+  'san-martin': { nombre: 'San Martín', lat: -34.5719, lon: -58.5389 },
+  'la-matanza': { nombre: 'La Matanza (San Justo)', lat: -34.6788, lon: -58.5636 },
+  lanus: { nombre: 'Lanús', lat: -34.7089, lon: -58.3925 },
+};
+
+const LOCALIDAD_POR_DEFECTO = 'la-plata';
 const TIMEOUT_MS = 8000;
 const CACHE_MS = 10 * 60 * 1000; // 10 minutos: evita golpear las APIs externas en cada visita.
 
-let cache = { datos: null, expiraEn: 0 };
+// El clima se cachea por localidad (cada una pega a una URL distinta); el
+// dólar es un único valor nacional, se cachea aparte y una sola vez.
+const cacheClimaPorLocalidad = new Map();
+let cacheDolar = { datos: null, expiraEn: 0 };
 
 function conTimeout(promesa, ms) {
   return Promise.race([
@@ -31,9 +54,22 @@ function conTimeout(promesa, ms) {
   ]);
 }
 
-async function obtenerClima() {
+/**
+ * Normaliza la clave de localidad recibida por query string: si no es
+ * una de las conocidas, cae a la de por defecto (nunca rompe con un
+ * valor inválido, simplemente ignora el filtro).
+ * @param {unknown} valor
+ * @returns {string}
+ */
+function normalizarLocalidad(valor) {
+  const clave = typeof valor === 'string' ? valor.trim() : '';
+  return LOCALIDADES[clave] ? clave : LOCALIDAD_POR_DEFECTO;
+}
+
+async function obtenerClima(localidadClave) {
+  const localidad = LOCALIDADES[localidadClave];
   const url =
-    `https://api.open-meteo.com/v1/forecast?latitude=${LATITUD_LA_PLATA}&longitude=${LONGITUD_LA_PLATA}` +
+    `https://api.open-meteo.com/v1/forecast?latitude=${localidad.lat}&longitude=${localidad.lon}` +
     '&current=temperature_2m,relative_humidity_2m,wind_speed_10m' +
     '&timezone=America%2FArgentina%2FBuenos_Aires';
 
@@ -70,34 +106,59 @@ async function obtenerDolar() {
   };
 }
 
-/**
- * Devuelve `{ clima, dolar, actualizado }`. `clima`/`dolar` son `null` si
- * esa fuente en particular falló; nunca lanza una excepción hacia arriba.
- * Cachea el resultado combinado por 10 minutos.
- */
-async function obtenerClimaYDolar() {
-  const ahora = Date.now();
-  if (cache.datos && cache.expiraEn > ahora) {
-    return cache.datos;
+async function obtenerDolarCacheado(ahora) {
+  if (cacheDolar.datos && cacheDolar.expiraEn > ahora) {
+    return cacheDolar.datos;
   }
-
-  const [climaResultado, dolarResultado] = await Promise.allSettled([obtenerClima(), obtenerDolar()]);
-
-  if (climaResultado.status === 'rejected') {
-    console.error('No se pudo obtener el clima:', climaResultado.reason.message);
+  try {
+    const datos = await obtenerDolar();
+    cacheDolar = { datos, expiraEn: ahora + CACHE_MS };
+    return datos;
+  } catch (err) {
+    console.error('No se pudo obtener la cotización del dólar:', err.message);
+    return null;
   }
-  if (dolarResultado.status === 'rejected') {
-    console.error('No se pudo obtener la cotización del dólar:', dolarResultado.reason.message);
-  }
-
-  const datos = {
-    clima: climaResultado.status === 'fulfilled' ? climaResultado.value : null,
-    dolar: dolarResultado.status === 'fulfilled' ? dolarResultado.value : null,
-    actualizado: new Date().toISOString(),
-  };
-
-  cache = { datos, expiraEn: ahora + CACHE_MS };
-  return datos;
 }
 
-module.exports = { obtenerClimaYDolar };
+async function obtenerClimaCacheado(localidadClave, ahora) {
+  const cacheada = cacheClimaPorLocalidad.get(localidadClave);
+  if (cacheada && cacheada.expiraEn > ahora) {
+    return cacheada.datos;
+  }
+  try {
+    const datos = await obtenerClima(localidadClave);
+    cacheClimaPorLocalidad.set(localidadClave, { datos, expiraEn: ahora + CACHE_MS });
+    return datos;
+  } catch (err) {
+    console.error(`No se pudo obtener el clima de ${localidadClave}:`, err.message);
+    return null;
+  }
+}
+
+/**
+ * Devuelve `{ clima, dolar, actualizado, localidad }`. `clima`/`dolar`
+ * son `null` si esa fuente en particular falló; nunca lanza una
+ * excepción hacia arriba. El clima corresponde a la localidad pedida
+ * (`la-plata` si no se pasa ninguna o no es una localidad conocida); el
+ * dólar es el mismo para cualquier localidad. Cachea cada uno por
+ * separado, 10 minutos.
+ * @param {string} [localidadClave]
+ */
+async function obtenerClimaYDolar(localidadClave) {
+  const localidad = normalizarLocalidad(localidadClave);
+  const ahora = Date.now();
+
+  const [clima, dolar] = await Promise.all([
+    obtenerClimaCacheado(localidad, ahora),
+    obtenerDolarCacheado(ahora),
+  ]);
+
+  return {
+    clima,
+    dolar,
+    localidad,
+    actualizado: new Date().toISOString(),
+  };
+}
+
+module.exports = { obtenerClimaYDolar, LOCALIDADES, LOCALIDAD_POR_DEFECTO };

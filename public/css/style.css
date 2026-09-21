@@ -243,6 +243,29 @@ button {
   font-weight: 600;
 }
 
+.ticker-clima-grupo {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.selector-localidad {
+  background: transparent;
+  color: var(--color-texto-suave);
+  border: none;
+  font-size: 0.8rem;
+  font-family: var(--fuente-sistema);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  max-width: 130px;
+}
+
+.selector-localidad:hover,
+.selector-localidad:focus {
+  color: var(--color-texto);
+}
+
 /* ============================================================
    Categorías (scroll horizontal en celular)
    ============================================================ */
@@ -682,22 +705,6 @@ button {
 .mensaje-vacio-compacto {
   font-size: 0.85rem;
   color: var(--color-texto-suave);
-}
-
-.lista-fuentes li {
-  padding: 0.4rem 0;
-  font-size: 0.88rem;
-  color: var(--color-texto);
-  border-bottom: 1px solid var(--color-tarjeta-borde);
-}
-
-.lista-fuentes li:last-child {
-  border-bottom: none;
-}
-
-.lista-fuentes a:hover {
-  color: var(--color-acento);
-  text-decoration: underline;
 }
 
 .suscripcion-texto {

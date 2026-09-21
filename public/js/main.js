@@ -27,6 +27,18 @@
 
   var temporizadorBusqueda = null;
 
+  // Localidad elegida para el pronóstico del ticker (ver #selector-localidad).
+  // Se guarda en localStorage para que quede recordada entre visitas; si el
+  // navegador no lo permite (modo privado, storage bloqueado) se sigue
+  // funcionando igual, solo que sin recordar la elección.
+  var LOCALIDAD_POR_DEFECTO = 'la-plata';
+  var localidadClima = LOCALIDAD_POR_DEFECTO;
+  try {
+    localidadClima = window.localStorage.getItem('localidad-clima') || LOCALIDAD_POR_DEFECTO;
+  } catch (error) {
+    localidadClima = LOCALIDAD_POR_DEFECTO;
+  }
+
   // ------------------------------------------------------------------
   // Referencias al DOM (el script se carga con "defer", el DOM ya existe)
   // ------------------------------------------------------------------
@@ -40,7 +52,6 @@
   var elPaginacion = document.getElementById('paginacion');
   var elListaUltimas = document.getElementById('lista-ultimas');
   var elPublicidadesSidebar = document.getElementById('publicidades-sidebar');
-  var elListaFuentes = document.getElementById('lista-fuentes');
   var elFormBusqueda = document.getElementById('form-busqueda');
   var elInputBusqueda = document.getElementById('input-busqueda');
   var elLogoInicio = document.getElementById('logo-inicio');
@@ -49,6 +60,7 @@
   var elLogoIconoPersonalizado = document.getElementById('logo-icono-personalizado');
   var elFooterNombre = document.getElementById('footer-nombre');
   var elTextoLegal = document.getElementById('texto-legal');
+  var elSelectorLocalidad = document.getElementById('selector-localidad');
   var elTickerClima = document.getElementById('ticker-clima');
   var elTickerDolar = document.getElementById('ticker-dolar');
   var elFormSuscripcion = document.getElementById('form-suscripcion');
@@ -275,19 +287,70 @@
       textoFecha = ahora.toDateString();
       textoHora = ahora.toTimeString();
     }
-    elReloj.textContent = 'La Plata, ' + textoFecha + ' · ' + textoHora;
+    var nombreLocalidad =
+      (elSelectorLocalidad && elSelectorLocalidad.selectedOptions[0] && elSelectorLocalidad.selectedOptions[0].textContent) ||
+      'La Plata';
+    elReloj.textContent = nombreLocalidad + ', ' + textoFecha + ' · ' + textoHora;
     elReloj.setAttribute('datetime', ahora.toISOString());
   }
 
   // ------------------------------------------------------------------
-  // Ticker de clima (La Plata) y cotización del dólar
+  // Ticker de clima (por localidad elegida) y cotización del dólar
   // ------------------------------------------------------------------
+
+  function cargarLocalidades() {
+    if (!elSelectorLocalidad) {
+      return;
+    }
+    obtenerJSON('/api/localidades')
+      .then(function (localidades) {
+        if (!Array.isArray(localidades) || localidades.length === 0) {
+          return;
+        }
+        vaciar(elSelectorLocalidad);
+        localidades.forEach(function (localidad) {
+          var opcion = document.createElement('option');
+          opcion.value = localidad.clave;
+          opcion.textContent = localidad.nombre;
+          elSelectorLocalidad.appendChild(opcion);
+        });
+        // Si la localidad guardada ya no existe en la lista (o nunca se
+        // guardó ninguna), el <select> simplemente queda en la primera.
+        elSelectorLocalidad.value = localidadClima;
+        localidadClima = elSelectorLocalidad.value;
+        actualizarReloj();
+        cargarTickerClimaDolar();
+      })
+      .catch(function (error) {
+        console.error('No se pudo cargar el listado de localidades.', error);
+      });
+  }
+
+  function manejarCambioLocalidad() {
+    localidadClima = elSelectorLocalidad.value;
+    try {
+      window.localStorage.setItem('localidad-clima', localidadClima);
+    } catch (error) {
+      // Sin storage disponible no pasa nada: solo no se recuerda para la próxima visita.
+    }
+    actualizarReloj();
+    cargarTickerClimaDolar();
+  }
+
+  function configurarSelectorLocalidad() {
+    if (!elSelectorLocalidad) {
+      return;
+    }
+    elSelectorLocalidad.addEventListener('change', manejarCambioLocalidad);
+  }
 
   function cargarTickerClimaDolar() {
     if (!elTickerClima && !elTickerDolar) {
       return;
     }
-    obtenerJSON('/api/clima-dolar')
+    var params = new URLSearchParams();
+    params.set('localidad', localidadClima);
+    obtenerJSON('/api/clima-dolar?' + params.toString())
       .then(function (datos) {
         if (elTickerClima) {
           if (datos && datos.clima) {
@@ -829,49 +892,6 @@
   }
 
   // ------------------------------------------------------------------
-  // Sidebar: fuentes activas
-  // ------------------------------------------------------------------
-
-  function cargarFuentes() {
-    if (!elListaFuentes) {
-      return;
-    }
-    vaciar(elListaFuentes);
-
-    obtenerJSON('/api/fuentes')
-      .then(function (fuentes) {
-        vaciar(elListaFuentes);
-        if (!Array.isArray(fuentes) || fuentes.length === 0) {
-          var liVacio = document.createElement('li');
-          liVacio.textContent = 'Sin fuentes activas por el momento.';
-          elListaFuentes.appendChild(liVacio);
-          return;
-        }
-        fuentes.forEach(function (fuente) {
-          var li = document.createElement('li');
-          if (fuente.sitio_web) {
-            var enlace = document.createElement('a');
-            enlace.href = fuente.sitio_web;
-            enlace.target = '_blank';
-            enlace.rel = 'noopener noreferrer';
-            enlace.textContent = fuente.nombre;
-            li.appendChild(enlace);
-          } else {
-            li.textContent = fuente.nombre;
-          }
-          elListaFuentes.appendChild(li);
-        });
-      })
-      .catch(function (error) {
-        vaciar(elListaFuentes);
-        var liError = document.createElement('li');
-        liError.textContent = 'No se pudo cargar el listado de fuentes.';
-        elListaFuentes.appendChild(liError);
-        console.error('Error al cargar fuentes.', error);
-      });
-  }
-
-  // ------------------------------------------------------------------
   // Sidebar: publicidades
   // ------------------------------------------------------------------
 
@@ -1020,14 +1040,14 @@
     actualizarSeccionDestacada();
     cargarNoticias();
     cargarUltimasNoticias();
-    cargarFuentes();
     cargarPublicidadesSidebar();
-    cargarTickerClimaDolar();
+    cargarLocalidades(); // dispara la primera carga del ticker de clima/dólar al resolver
     setInterval(cargarTickerClimaDolar, 10 * 60 * 1000); // se refresca cada 10 minutos
 
     configurarBusqueda();
     configurarLogo();
     configurarFiltroAntiguedad();
+    configurarSelectorLocalidad();
     configurarSuscripcion();
   }
 
