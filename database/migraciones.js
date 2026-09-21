@@ -261,6 +261,39 @@ function migrarASeccionesPolicialPoliticoDeportivo() {
   db.ejecutar("UPDATE fuentes SET categoria_default = NULL WHERE categoria_default = 'Internacional'");
 }
 
+// URLs de fuentes que el administrador confirmó muertas (dominio
+// inexistente, 404, o error de parseo) probándolas desde su propio
+// hosting, y que por eso ya no están en seeds/fuentes.js. Se identifican
+// por url_rss porque es la clave UNIQUE de la tabla `fuentes`.
+const URLS_FUENTES_MUERTAS = [
+  'https://infoavellaneda.com.ar/feed/',
+  'https://diariodemoron.com.ar/feed/',
+  'https://elmensajerodemoreno.com.ar/feed/',
+  'https://zonanortevision.com.ar/feed/',
+  'https://elsolquilmes.com.ar/feed/',
+  'https://quilmespresente.com.ar/feed/',
+  'https://www.diariolaverdad.com.ar/feed/',
+  'https://www.launion.com.ar/feed/',
+  'https://www.eldia.com.ar/feed/',
+  'https://www.0221.com.ar/feed/',
+  'https://www.dib.com.ar/feed/',
+];
+
+/**
+ * Desactiva (no borra: preserva el historial y cualquier noticia ya
+ * guardada con `fuente_id` apuntando a ellas) las fuentes que el
+ * administrador confirmó muertas. No hace nada si la fuente ya estaba
+ * desactivada, y no toca ninguna otra columna (si el administrador le
+ * había puesto un `categoria_default`, por ejemplo, se conserva).
+ */
+function desactivarFuentesMuertas() {
+  const marcadores = URLS_FUENTES_MUERTAS.map(() => '?').join(',');
+  db.ejecutar(
+    `UPDATE fuentes SET activa = 0 WHERE url_rss IN (${marcadores}) AND activa = 1`,
+    URLS_FUENTES_MUERTAS
+  );
+}
+
 /**
  * El color primario por defecto era azul (#1a237e) y el administrador
  * pidió específicamente que la interfaz no sea azul. Actualiza ese valor
@@ -301,6 +334,7 @@ function ejecutarMigraciones() {
   sembrarUsuarioAdmin();
   sembrarConfiguracion();
   sembrarFuentes();
+  desactivarFuentesMuertas();
   renombrarPortalSiSigueEnValorViejo();
   corregirColorPrimarioAzul();
   reasignarCategoriaDetenciones();
