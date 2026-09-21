@@ -587,13 +587,69 @@
     }
   }
 
+  var MAX_DESTACADAS = 3;
+
+  /**
+   * Intenta cargar una URL de imagen en un <img> descartable, sin
+   * insertarlo en la página. Se usa para saber, ANTES de mostrar una
+   * tarjeta destacada, si su imagen realmente va a cargar — así se evita
+   * el parpadeo de mostrar la tarjeta y sacarla un instante después
+   * (como pasaba antes), y se puede calcular de una sola vez cuántos
+   * huecos quedan libres para rellenar con publicidad.
+   * @param {string} url
+   * @returns {Promise<boolean>}
+   */
+  function precargarImagen(url) {
+    return new Promise(function (resolve) {
+      if (!url) {
+        resolve(false);
+        return;
+      }
+      var img = new Image();
+      img.onload = function () {
+        resolve(true);
+      };
+      img.onerror = function () {
+        resolve(false);
+      };
+      img.src = url;
+    });
+  }
+
+  /**
+   * Completa hasta `cantidad` huecos de la grilla de destacadas con
+   * publicidades de la posición "destacada" (a pedido del
+   * administrador: si no hay suficientes noticias destacadas con
+   * imagen, ese espacio arriba de todo no debe quedar vacío ni
+   * desbalanceado, se llena con publicidad en vez de eso).
+   * @param {number} cantidad
+   */
+  function rellenarDestacadasConPublicidad(cantidad) {
+    if (cantidad <= 0) {
+      return;
+    }
+    obtenerJSON('/api/publicidades?posicion=destacada')
+      .then(function (publicidades) {
+        if (!Array.isArray(publicidades) || publicidades.length === 0) {
+          return;
+        }
+        publicidades.slice(0, cantidad).forEach(function (publicidad) {
+          elSeccionDestacada.appendChild(crearTarjetaPublicidad(publicidad));
+          registrarImpresion(publicidad.id);
+        });
+      })
+      .catch(function (error) {
+        console.error('No se pudieron cargar las publicidades de relleno de destacadas.', error);
+      });
+  }
+
   function cargarDestacada() {
     if (!elSeccionDestacada) {
       return;
     }
     vaciar(elSeccionDestacada);
     elSeccionDestacada.classList.add('destacadas-grid');
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < MAX_DESTACADAS; i++) {
       var esqueleto = document.createElement('div');
       esqueleto.className = 'tarjeta-skeleton tarjeta-skeleton-destacada';
       esqueleto.setAttribute('aria-hidden', 'true');
@@ -605,14 +661,24 @@
 
     obtenerJSON('/api/noticias/destacada')
       .then(function (destacadas) {
+        var lista = Array.isArray(destacadas) ? destacadas : [];
+        return Promise.all(lista.map(function (noticia) {
+          return precargarImagen(noticia.imagen_url);
+        })).then(function (resultados) {
+          return lista.filter(function (noticia, indice) {
+            return resultados[indice];
+          });
+        });
+      })
+      .then(function (destacadasConImagen) {
         vaciar(elSeccionDestacada);
-        if (!Array.isArray(destacadas) || destacadas.length === 0) {
-          return;
-        }
-        destacadas.forEach(function (noticia) {
+        destacadasConImagen.forEach(function (noticia) {
           elSeccionDestacada.appendChild(crearTarjetaNoticia(noticia, true));
         });
-        actualizarMetaOg(destacadas[0]);
+        if (destacadasConImagen[0]) {
+          actualizarMetaOg(destacadasConImagen[0]);
+        }
+        rellenarDestacadasConPublicidad(MAX_DESTACADAS - destacadasConImagen.length);
       })
       .catch(function (error) {
         vaciar(elSeccionDestacada);

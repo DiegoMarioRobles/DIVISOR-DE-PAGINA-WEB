@@ -39,7 +39,7 @@ function obtenerCategorias() {
   }
 }
 
-const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer'];
+const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer', 'destacada'];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Filtro de antigüedad para /api/noticias y /api/buscar: cada valor es el

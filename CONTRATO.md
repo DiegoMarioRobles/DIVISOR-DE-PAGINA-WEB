@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS publicidades (
   nombre TEXT NOT NULL,             -- nombre de la campaña
   imagen_url TEXT NOT NULL,
   link_destino TEXT NOT NULL,
-  posicion TEXT NOT NULL,           -- header | sidebar | entre-noticias | footer
+  posicion TEXT NOT NULL,           -- header | destacada | sidebar | entre-noticias | footer
   activa INTEGER NOT NULL DEFAULT 1,
   impresiones INTEGER NOT NULL DEFAULT 0,
   clicks INTEGER NOT NULL DEFAULT 0,
@@ -166,7 +166,12 @@ omitido = sin filtro de fecha. 400 si no es uno de esos valores.
 menos de 3 marcadas). El panel admin permite marcar hasta 3 noticias
 como destacadas a la vez (`PATCH /api/admin/noticias/:id/destacar`); si
 ya hay 3 y se marca una cuarta, se desmarca automáticamente la más
-vieja.
+vieja. El front (`public/js/main.js`, `cargarDestacada`) precarga cada
+imagen antes de mostrar la tarjeta (evita el caso de una imagen que
+figura en la base pero rompe al cargar), y si después de eso quedan
+menos de 3 con imagen que carga bien, completa los huecos con
+publicidades de `GET /api/publicidades?posicion=destacada` — así la
+portada nunca queda con espacio vacío o desbalanceado arriba de todo.
 
 **GET /api/noticias/:id** → detalle de una noticia. Incrementa `vistas`.
 404 con el formato de error si no existe o está oculta.

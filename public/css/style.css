@@ -437,6 +437,23 @@ button {
   line-height: 1.3;
 }
 
+/* Publicidad usada para rellenar huecos de la grilla de destacadas
+   (posición "destacada"): mismas proporciones que una tarjeta real para
+   que no se note el "parche" — la carga normal de .publicidad-item
+   (sidebar) es un chip chico sin alto fijo, acá necesita verse como una
+   tarjeta grande más. */
+.destacadas-grid > .publicidad-item {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radio-borde);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.destacadas-grid > .publicidad-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ============================================================
    Grilla de noticias / tarjetas
    ============================================================ */

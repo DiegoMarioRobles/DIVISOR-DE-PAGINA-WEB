@@ -16,6 +16,7 @@ const CATEGORIAS = ['Policial', 'Político', 'Deportivo', 'General'];
 
 const ETIQUETAS_POSICION = {
   header: 'Header',
+  destacada: 'Portada (relleno destacadas)',
   sidebar: 'Sidebar',
   'entre-noticias': 'Entre noticias',
   footer: 'Footer',

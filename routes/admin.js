@@ -17,7 +17,7 @@ const router = express.Router();
 
 const CATEGORIAS_POR_DEFECTO = ['Policial', 'Político', 'Deportivo', 'General'];
 
-const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer'];
+const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer', 'destacada'];
 
 const CLAVES_CONFIGURACION_VALIDAS = [
   'nombre_portal',
