@@ -29,6 +29,17 @@ const { enviarResumenNuevasNoticias } = require('./emailService');
 // leemos puedan reconocer de dónde viene el tráfico.
 const USER_AGENT = 'SeguridadBonaerense-RSS-Bot/1.0 (+https://seguridadbonaerense.example)';
 
+// User-Agent para el pedido de respaldo que busca la imagen de portada en
+// la página del artículo (ver `obtenerImagenDesdeArticulo`). A propósito
+// es uno de navegador común y no el de arriba: varios sitios de medios
+// chicos bloquean o le devuelven una página recortada (sin las meta tags
+// que necesitamos) a cualquier cosa que se identifique como "bot", pero sí
+// sirven la página completa a un navegador normal — que es, ni más ni
+// menos, lo mismo que ve cualquier persona que visita el link.
+const USER_AGENT_NAVEGADOR =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ' +
+  '(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
+
 // Timeout al leer un feed para guardar noticias (proceso de fondo, puede
 // tolerar un poco más de espera).
 const TIMEOUT_LECTURA_MS = 15000;
@@ -42,7 +53,11 @@ const MAX_LARGO_RESUMEN = 300;
 
 // Timeout para el pedido de respaldo que busca la imagen de portada
 // directamente en la página del artículo (ver `obtenerImagenDesdeArticulo`).
-const TIMEOUT_IMAGEN_MS = 6000;
+// Un poco más generoso que el resto: muchos de estos medios chicos están
+// en hosting compartido lento, y perder la imagen por un timeout corto
+// sale más caro (la noticia queda sin imagen para siempre) que esperar
+// unos segundos más una vez por artículo nuevo.
+const TIMEOUT_IMAGEN_MS = 9000;
 
 // Campos de espacio de nombres "media" (media:content / media:thumbnail)
 // que rss-parser no interpreta por defecto: hay que pedirlos explícitamente
@@ -213,7 +228,7 @@ async function obtenerImagenDesdeArticulo(link) {
     try {
       respuesta = await fetch(link, {
         signal: controlador.signal,
-        headers: { 'User-Agent': USER_AGENT },
+        headers: { 'User-Agent': USER_AGENT_NAVEGADOR },
       });
     } finally {
       clearTimeout(temporizador);
@@ -221,11 +236,28 @@ async function obtenerImagenDesdeArticulo(link) {
     if (!respuesta.ok) return null;
 
     const html = await respuesta.text();
+    // Se prueban varias variantes de meta tag, en orden de preferencia:
+    // og:image es el estándar más común, pero no todos los sitios lo usan
+    // (o lo usan con el atributo content antes que property), así que se
+    // cae a og:image:secure_url, twitter:image y <link rel="image_src">
+    // antes de darse por vencido.
     const coincidencia =
       /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i.exec(html) ||
       /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i.exec(html) ||
-      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i.exec(html);
-    return coincidencia ? coincidencia[1] : null;
+      /<meta[^>]+property=["']og:image:secure_url["'][^>]+content=["']([^"']+)["']/i.exec(html) ||
+      /<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i.exec(html) ||
+      /<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i.exec(html) ||
+      /<link[^>]+rel=["']image_src["'][^>]+href=["']([^"']+)["']/i.exec(html);
+    if (!coincidencia) return null;
+
+    // La URL de la imagen puede venir relativa (ej. "/media/foto.jpg" en
+    // vez de "https://sitio.com/media/foto.jpg"): se resuelve siempre
+    // contra la URL del artículo para que quede una URL absoluta usable.
+    try {
+      return new URL(coincidencia[1], link).href;
+    } catch (err) {
+      return null;
+    }
   } catch (err) {
     return null;
   }

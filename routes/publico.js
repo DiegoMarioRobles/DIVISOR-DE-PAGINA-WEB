@@ -139,7 +139,13 @@ router.get(
     const limite = parsearLimite(req.query.limite, obtenerLimitePorDefecto());
     const categoria = typeof req.query.categoria === 'string' ? req.query.categoria.trim() : '';
 
-    const condiciones = ['oculta = 0'];
+    // Se excluyen las noticias sin imagen: en un portal de noticias, una
+    // tarjeta con el cartel "Sin imagen disponible" se ve poco profesional
+    // y rompe la grilla. La noticia no se borra (sigue en la base y visible
+    // desde el panel de admin): si más adelante se le consigue una imagen
+    // (ver `services/rssService.js`, obtenerImagenDesdeArticulo), vuelve a
+    // aparecer sola en el próximo listado.
+    const condiciones = ['oculta = 0', "imagen_url IS NOT NULL AND imagen_url != ''"];
     const parametros = [];
 
     if (categoria) {
@@ -185,8 +191,12 @@ const MAX_DESTACADAS = 3;
 router.get(
   '/noticias/destacada',
   asyncHandler(async (req, res) => {
+    // Mismo criterio que /api/noticias: no se muestran noticias sin
+    // imagen (se ven mal en las tarjetas grandes de "destacada").
+    const condicionImagen = "imagen_url IS NOT NULL AND imagen_url != ''";
+
     const marcadas = db.consultar(
-      `SELECT * FROM noticias WHERE oculta = 0 AND destacada = 1
+      `SELECT * FROM noticias WHERE oculta = 0 AND destacada = 1 AND ${condicionImagen}
        ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
       [MAX_DESTACADAS]
     );
@@ -198,7 +208,7 @@ router.get(
         ? `AND id NOT IN (${idsExcluidos.map(() => '?').join(',')})`
         : '';
       const relleno = db.consultar(
-        `SELECT * FROM noticias WHERE oculta = 0 ${condicionExcluir}
+        `SELECT * FROM noticias WHERE oculta = 0 AND ${condicionImagen} ${condicionExcluir}
          ORDER BY datetime(fecha_publicacion) DESC LIMIT ?`,
         [...idsExcluidos, MAX_DESTACADAS - destacadas.length]
       );

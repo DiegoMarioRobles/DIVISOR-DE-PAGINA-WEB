@@ -131,7 +131,12 @@ indique explícitamente abajo. Fechas siempre ISO 8601.
 
 ### Pública (sin autenticación)
 
-**GET /api/noticias?pagina=1&categoria=&limite=20**
+**GET /api/noticias?pagina=1&categoria=&limite=20** — solo noticias con
+`imagen_url` (las que no tienen imagen no se listan acá, aunque siguen
+existiendo en la base y visibles desde el panel admin; reaparecen solas
+si más adelante se les consigue una imagen). `GET /api/buscar` es la
+excepción: ahí sí se listan también las noticias sin imagen, porque el
+usuario está buscando un texto puntual.
 ```json
 {
   "noticias": [ { "id":1, "titulo":"...", "resumen":"...", "imagen_url":"...",
@@ -142,11 +147,12 @@ indique explícitamente abajo. Fechas siempre ISO 8601.
 }
 ```
 
-**GET /api/noticias/destacada** → array de hasta 3 noticias (las marcadas
-`destacada`, completando con las más recientes si hay menos de 3
-marcadas). El panel admin permite marcar hasta 3 noticias como
-destacadas a la vez (`PATCH /api/admin/noticias/:id/destacar`); si ya
-hay 3 y se marca una cuarta, se desmarca automáticamente la más vieja.
+**GET /api/noticias/destacada** → array de hasta 3 noticias con imagen
+(las marcadas `destacada`, completando con las más recientes si hay
+menos de 3 marcadas). El panel admin permite marcar hasta 3 noticias
+como destacadas a la vez (`PATCH /api/admin/noticias/:id/destacar`); si
+ya hay 3 y se marca una cuarta, se desmarca automáticamente la más
+vieja.
 
 **GET /api/noticias/:id** → detalle de una noticia. Incrementa `vistas`.
 404 con el formato de error si no existe o está oculta.
