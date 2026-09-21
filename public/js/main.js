@@ -271,6 +271,8 @@
     }
     marcarCategoriaActiva(valor);
     cargarNoticias();
+    actualizarSeccionDestacada();
+    cargarUltimasNoticias();
   }
 
   function cargarCategorias() {
@@ -390,6 +392,31 @@
     var el = document.querySelector('meta[property="' + propiedad + '"]');
     if (el) {
       el.setAttribute('content', valor);
+    }
+  }
+
+  /**
+   * Las noticias destacadas son una selección editorial global (la marca
+   * el administrador desde el panel, sin categoría propia), no algo que
+   * tenga sentido por sección: si se dejaran visibles al filtrar por una
+   * categoría, se verían noticias de otras secciones mezcladas ahí
+   * arriba aunque el resto de la página sí filtre bien, dando la
+   * impresión de que el filtro "no hizo nada". Por eso solo se muestran
+   * en la vista general ("Todo", sin categoría ni búsqueda activa).
+   */
+  function actualizarSeccionDestacada() {
+    if (!elSeccionDestacada) {
+      return;
+    }
+    var mostrar = estado.modo === 'listado' && estado.categoria === '';
+    elSeccionDestacada.hidden = !mostrar;
+    if (mostrar) {
+      cargarDestacada();
+    } else {
+      vaciar(elSeccionDestacada);
+      // Se saca la clase para que no compita con la regla CSS
+      // ".seccion-destacada:empty" (display:none) que la oculta.
+      elSeccionDestacada.classList.remove('destacadas-grid');
     }
   }
 
@@ -581,13 +608,18 @@
       estado.pagina = 1;
       marcarCategoriaActiva('');
       cargarNoticias();
+      actualizarSeccionDestacada();
+      cargarUltimasNoticias();
       return;
     }
     estado.modo = 'busqueda';
+    estado.categoria = ''; // la búsqueda es siempre sobre todo el portal, no sobre la sección que hubiera activa
     estado.query = texto;
     estado.pagina = 1;
     marcarCategoriaActiva(''); // en modo búsqueda no hay categoría "activa" visualmente distinta a "Todo"
     cargarNoticias();
+    actualizarSeccionDestacada();
+    cargarUltimasNoticias();
   }
 
   function configurarBusqueda() {
@@ -647,7 +679,17 @@
       elListaUltimas.appendChild(li);
     }
 
-    obtenerJSON('/api/noticias?pagina=1&limite=10')
+    // Respeta la sección activa: si hay una categoría elegida, el "Últimas
+    // noticias" de la barra lateral muestra las últimas de esa sección, no
+    // las últimas de todo el portal (mismo criterio que la grilla principal).
+    var paramsUltimas = new URLSearchParams();
+    paramsUltimas.set('pagina', '1');
+    paramsUltimas.set('limite', '10');
+    if (estado.modo === 'listado' && estado.categoria) {
+      paramsUltimas.set('categoria', estado.categoria);
+    }
+
+    obtenerJSON('/api/noticias?' + paramsUltimas.toString())
       .then(function (datos) {
         vaciar(elListaUltimas);
         var noticias = (datos && Array.isArray(datos.noticias)) ? datos.noticias.slice(0, 10) : [];
@@ -840,6 +882,8 @@
       }
       marcarCategoriaActiva('');
       cargarNoticias();
+      actualizarSeccionDestacada();
+      cargarUltimasNoticias();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
@@ -853,7 +897,7 @@
     setInterval(actualizarReloj, 1000);
 
     cargarCategorias();
-    cargarDestacada();
+    actualizarSeccionDestacada();
     cargarNoticias();
     cargarUltimasNoticias();
     cargarFuentes();
