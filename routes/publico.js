@@ -344,9 +344,12 @@ router.get(
   })
 );
 
-// Claves de "configuracion" seguras para exponer públicamente (lo visual
-// y el texto legal). Nunca se exponen acá claves operativas como
-// intervalo_rss_minutos o noticias_por_pagina.
+// Claves de "configuracion" seguras para exponer públicamente (lo
+// visual, el texto legal, y el intervalo de RSS — este último no es
+// sensible y el portal lo necesita para autorefrescarse cada tantos
+// minutos, los mismos que configuró el administrador para el motor RSS
+// — ver public/js/main.js, configurarAutorefresco). noticias_por_pagina
+// sigue sin exponerse: no hace falta en el cliente.
 const CLAVES_TEMA_PUBLICAS = [
   'nombre_portal',
   'logo_url',
@@ -355,6 +358,7 @@ const CLAVES_TEMA_PUBLICAS = [
   'color_fondo',
   'tamano_fuente_base',
   'texto_legal_footer',
+  'intervalo_rss_minutos',
 ];
 
 // GET /api/tema -> apariencia configurada desde el panel admin

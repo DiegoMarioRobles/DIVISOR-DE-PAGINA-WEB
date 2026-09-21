@@ -247,6 +247,8 @@
     if (tema.texto_legal_footer && elTextoLegal) {
       elTextoLegal.textContent = tema.texto_legal_footer;
     }
+
+    configurarAutorefresco(tema.intervalo_rss_minutos);
   }
 
   function cargarTema() {
@@ -254,7 +256,47 @@
       .then(aplicarTema)
       .catch(function (error) {
         console.error('No se pudo cargar la apariencia personalizada, se usan los valores por defecto.', error);
+        // Si ni siquiera esto respondió, se usa igual el intervalo por
+        // defecto: el portal debe autorefrescarse pase lo que pase, no
+        // solo cuando /api/tema esté disponible.
+        configurarAutorefresco(null);
       });
+  }
+
+  // ------------------------------------------------------------------
+  // Autorefresco: el portal vuelve a pedir noticias/destacadas/ticker
+  // solo, cada tantos minutos — el mismo intervalo que el administrador
+  // configuró para que se actualicen los feeds RSS (Configuración →
+  // "Intervalo de actualización RSS"), para que el visitante nunca tenga
+  // que apretar F5 a mano para ver lo último.
+  // ------------------------------------------------------------------
+
+  var idIntervaloAutorefresco = null;
+  var INTERVALO_AUTOREFRESCO_POR_DEFECTO_MIN = 30; // mismo default que configuracion.intervalo_rss_minutos
+
+  function refrescarContenidoAutomatico() {
+    // Si la pestaña está en segundo plano no tiene sentido gastar pedidos
+    // de red: el próximo tick, cuando vuelva a estar visible, igual va a
+    // traer lo último.
+    if (document.visibilityState !== 'visible') {
+      return;
+    }
+    cargarNoticias();
+    actualizarSeccionDestacada();
+    cargarUltimasNoticias();
+    cargarPublicidadesSidebar();
+    cargarTickerClimaDolar();
+  }
+
+  function configurarAutorefresco(intervaloMinutos) {
+    var minutos = parseInt(intervaloMinutos, 10);
+    if (!Number.isFinite(minutos) || minutos <= 0) {
+      minutos = INTERVALO_AUTOREFRESCO_POR_DEFECTO_MIN;
+    }
+    if (idIntervaloAutorefresco) {
+      clearInterval(idIntervaloAutorefresco);
+    }
+    idIntervaloAutorefresco = setInterval(refrescarContenidoAutomatico, minutos * 60 * 1000);
   }
 
   // ------------------------------------------------------------------

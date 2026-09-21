@@ -198,11 +198,17 @@ que el portal público la aplique al cargar:
   "nombre_portal": "El Observador", "logo_url": "",
   "color_primario": "#c9a635", "color_acento": "#c62828",
   "color_fondo": "#0a0e1a", "tamano_fuente_base": "16",
-  "texto_legal_footer": "..."
+  "texto_legal_footer": "...", "intervalo_rss_minutos": "30"
 }
 ```
-Subconjunto seguro de `configuracion` (nunca expone claves operativas
-como `intervalo_rss_minutos`).
+Subconjunto seguro de `configuracion` (nunca expone `noticias_por_pagina`
+ni otras claves puramente internas). `intervalo_rss_minutos` sí se
+expone a propósito: el portal lo usa para autorefrescarse solo cada
+tantos minutos (ver `public/js/main.js`, `configurarAutorefresco`), con
+el mismo valor que el administrador configuró para el motor RSS — así
+el visitante nunca tiene que recargar la página a mano para ver lo
+último. Si `GET /api/tema` falla por completo, el portal igual se
+autorefresca cada 30 minutos por defecto.
 
 **GET /api/fuentes** → fuentes activas, solo `id, nombre, sitio_web`. Ya
 no se muestra en ningún lado del portal público (a pedido del
