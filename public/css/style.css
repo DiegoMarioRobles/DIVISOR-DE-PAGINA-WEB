@@ -253,18 +253,49 @@ button {
   position: sticky;
   top: 0;
   z-index: 40;
-  overflow: hidden;
+}
+
+.categorias-nav-interior {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .categorias-lista {
   display: flex;
   gap: 0.5rem;
   overflow-x: auto;
-  padding: 0.6rem 1rem;
-  max-width: 1280px;
-  margin: 0 auto;
+  padding: 0.6rem 0;
+  flex: 1 1 auto;
+  min-width: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+}
+
+.filtro-antiguedad {
+  /* En mobile ocupa su propia fila completa (ver flex-wrap del padre),
+     para no competir por ancho con los chips de categoría que ya
+     scrollean horizontal; en >=600px vuelve a ser un elemento más al
+     final de la misma fila (ver media query más abajo). */
+  flex: 1 1 100%;
+  background: var(--color-tarjeta);
+  color: var(--color-texto);
+  border: 1px solid var(--color-tarjeta-borde);
+  border-radius: 999px;
+  padding: 0.4rem 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--fuente-sistema);
+  cursor: pointer;
+}
+
+.filtro-antiguedad:hover {
+  border-color: var(--color-acento);
 }
 
 .categorias-lista::-webkit-scrollbar {
@@ -866,6 +897,11 @@ button {
     gap: 1.25rem;
   }
 
+  .filtro-antiguedad {
+    flex: 0 0 auto;
+    margin-bottom: 0;
+  }
+
   .ticker-bar .buscador-form {
     margin-left: auto;
     flex: 0 1 260px;
@@ -898,8 +934,8 @@ button {
     padding: 0.5rem 2rem;
   }
 
-  .categorias-lista {
-    padding: 0.6rem 2rem;
+  .categorias-nav-interior {
+    padding: 0 2rem;
   }
 
   #contenido-principal {

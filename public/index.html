@@ -72,9 +72,19 @@
   </header>
 
   <nav class="categorias-nav" aria-label="Categorías de noticias">
-    <ul id="lista-categorias" class="categorias-lista">
-      <!-- Se completa dinámicamente vía JS con GET /api/categorias -->
-    </ul>
+    <div class="categorias-nav-interior">
+      <ul id="lista-categorias" class="categorias-lista">
+        <!-- Se completa dinámicamente vía JS con GET /api/categorias -->
+      </ul>
+      <label for="filtro-antiguedad" class="sr-only">Filtrar por antigüedad</label>
+      <select id="filtro-antiguedad" class="filtro-antiguedad" aria-label="Filtrar noticias por antigüedad">
+        <option value="">Todas las fechas</option>
+        <option value="1h">Última hora</option>
+        <option value="24h">Últimas 24 horas</option>
+        <option value="7d">Última semana</option>
+        <option value="30d">Último mes</option>
+      </select>
+    </div>
   </nav>
 
   <main id="contenido-principal">

@@ -42,6 +42,41 @@ function obtenerCategorias() {
 const POSICIONES_PUBLICIDAD = ['header', 'sidebar', 'entre-noticias', 'footer'];
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Filtro de antigüedad para /api/noticias y /api/buscar: cada valor es el
+// modificador SQLite de datetime() correspondiente. Son literales fijos
+// escritos acá mismo (nunca texto que venga del usuario), así que
+// interpolarlos directo en la consulta es seguro; lo que sí viene del
+// usuario (`req.query.periodo`) solo se usa para buscar la clave en este
+// objeto, nunca se concatena directo.
+const PERIODOS_VALIDOS = {
+  '1h': "datetime('now', '-1 hours')",
+  '24h': "datetime('now', '-24 hours')",
+  '7d': "datetime('now', '-7 days')",
+  '30d': "datetime('now', '-30 days')",
+};
+
+/**
+ * Valida `req.query.periodo` contra PERIODOS_VALIDOS y, si viene uno
+ * válido, agrega la condición correspondiente a `condiciones` (por
+ * referencia). Tira CodigoError 400 si el valor no es ninguno de los
+ * permitidos. Un período vacío/ausente no agrega ninguna condición (sin
+ * filtro de antigüedad, se listan noticias de cualquier fecha).
+ * @param {string[]} condiciones
+ * @param {unknown} periodoQuery
+ */
+function aplicarFiltroPeriodo(condiciones, periodoQuery) {
+  const periodo = typeof periodoQuery === 'string' ? periodoQuery.trim() : '';
+  if (!periodo) return;
+  const modificador = PERIODOS_VALIDOS[periodo];
+  if (!modificador) {
+    throw new CodigoError(
+      `El período indicado no es válido. Debe ser uno de: ${Object.keys(PERIODOS_VALIDOS).join(', ')}.`,
+      400
+    );
+  }
+  condiciones.push(`datetime(fecha_publicacion) >= ${modificador}`);
+}
+
 function paginaHtml(titulo, mensaje) {
   return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><title>${titulo} — El Observador</title>
@@ -156,6 +191,8 @@ router.get(
       parametros.push(categoria);
     }
 
+    aplicarFiltroPeriodo(condiciones, req.query.periodo);
+
     const whereSql = `WHERE ${condiciones.join(' AND ')}`;
 
     const filaTotal = db.consultarUno(
@@ -264,8 +301,10 @@ router.get(
     const limite = parsearLimite(req.query.limite, obtenerLimitePorDefecto());
     const patron = `%${escaparLike(q)}%`;
 
-    const whereSql = `WHERE oculta = 0 AND (titulo LIKE ? ESCAPE '\\' OR resumen LIKE ? ESCAPE '\\')`;
+    const condiciones = ['oculta = 0', "(titulo LIKE ? ESCAPE '\\' OR resumen LIKE ? ESCAPE '\\')"];
     const parametrosBase = [patron, patron];
+    aplicarFiltroPeriodo(condiciones, req.query.periodo);
+    const whereSql = `WHERE ${condiciones.join(' AND ')}`;
 
     const filaTotal = db.consultarUno(
       `SELECT COUNT(*) AS total FROM noticias ${whereSql}`,

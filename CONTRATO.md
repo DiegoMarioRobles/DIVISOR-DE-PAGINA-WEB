@@ -140,12 +140,14 @@ indique explícitamente abajo. Fechas siempre ISO 8601.
 
 ### Pública (sin autenticación)
 
-**GET /api/noticias?pagina=1&categoria=&limite=20** — solo noticias con
-`imagen_url` (las que no tienen imagen no se listan acá, aunque siguen
-existiendo en la base y visibles desde el panel admin; reaparecen solas
-si más adelante se les consigue una imagen). `GET /api/buscar` es la
-excepción: ahí sí se listan también las noticias sin imagen, porque el
-usuario está buscando un texto puntual.
+**GET /api/noticias?pagina=1&categoria=&limite=20&periodo=** — solo
+noticias con `imagen_url` (las que no tienen imagen no se listan acá,
+aunque siguen existiendo en la base y visibles desde el panel admin;
+reaparecen solas si más adelante se les consigue una imagen). `GET
+/api/buscar` es la excepción: ahí sí se listan también las noticias sin
+imagen, porque el usuario está buscando un texto puntual. `periodo`
+(opcional) filtra por antigüedad: uno de `1h`/`24h`/`7d`/`30d`; vacío u
+omitido = sin filtro de fecha. 400 si no es uno de esos valores.
 ```json
 {
   "noticias": [ { "id":1, "titulo":"...", "resumen":"...", "imagen_url":"...",
@@ -171,7 +173,9 @@ vieja.
 pero no se expone acá: no es una sección navegable del portal.)
 (lista fija, ver categorizador).
 
-**GET /api/buscar?q=texto&pagina=1** → mismo shape que `/api/noticias`.
+**GET /api/buscar?q=texto&pagina=1&periodo=** → mismo shape que
+`/api/noticias` (`periodo` con el mismo significado, pero acá sí se
+listan noticias sin imagen).
 
 **GET /api/tema** → apariencia configurada desde el panel admin, para
 que el portal público la aplique al cargar:

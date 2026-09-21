@@ -20,6 +20,7 @@
   var estado = {
     modo: 'listado', // 'listado' | 'busqueda'
     categoria: '',
+    periodo: '', // '' | '1h' | '24h' | '7d' | '30d' (ver #filtro-antiguedad)
     query: '',
     pagina: 1
   };
@@ -32,6 +33,7 @@
 
   var elReloj = document.getElementById('reloj');
   var elListaCategorias = document.getElementById('lista-categorias');
+  var elFiltroAntiguedad = document.getElementById('filtro-antiguedad');
   var elSeccionDestacada = document.getElementById('seccion-destacada');
   var elGrilla = document.getElementById('grilla-noticias');
   var elMensajeEstado = document.getElementById('mensaje-estado');
@@ -150,13 +152,42 @@
     }
   }
 
-  function establecerImagenConFallback(imgEl, urlOriginal, textoAlt) {
-    imgEl.src = urlOriginal || IMAGEN_PLACEHOLDER;
+  /**
+   * El servidor ya excluye del listado las noticias sin imagen (ver
+   * routes/publico.js), pero eso no cubre una imagen_url que apunte a un
+   * link roto (404, bloqueado por hotlink, etc.): esa sí llega con una
+   * URL "válida" y recién se descubre que no carga en el navegador. Para
+   * esos casos, en vez de mostrar el cartel "Sin imagen disponible", se
+   * saca directamente la tarjeta entera (`contenedorSiFalla`) del
+   * listado, para que nunca quede una noticia visible sin imagen real
+   * sea cual sea la causa.
+   * @param {HTMLImageElement} imgEl
+   * @param {string} urlOriginal
+   * @param {string} textoAlt
+   * @param {HTMLElement} [contenedorSiFalla] - elemento a eliminar del DOM
+   *   si la imagen no carga. Si no se pasa, cae al placeholder de
+   *   siempre (uso interno, ej. la fuente ya validó que hay imagen).
+   */
+  function establecerImagenConFallback(imgEl, urlOriginal, textoAlt, contenedorSiFalla) {
+    if (!urlOriginal) {
+      if (contenedorSiFalla) {
+        contenedorSiFalla.remove();
+        return;
+      }
+      imgEl.src = IMAGEN_PLACEHOLDER;
+      imgEl.alt = textoAlt;
+      return;
+    }
+    imgEl.src = urlOriginal;
     imgEl.alt = textoAlt;
     imgEl.loading = 'lazy';
     imgEl.onerror = function () {
       imgEl.onerror = null;
-      imgEl.src = IMAGEN_PLACEHOLDER;
+      if (contenedorSiFalla) {
+        contenedorSiFalla.remove();
+      } else {
+        imgEl.src = IMAGEN_PLACEHOLDER;
+      }
     };
   }
 
@@ -334,6 +365,20 @@
     cargarUltimasNoticias();
   }
 
+  function manejarCambioAntiguedad() {
+    estado.pagina = 1;
+    estado.periodo = elFiltroAntiguedad.value;
+    cargarNoticias();
+    cargarUltimasNoticias();
+  }
+
+  function configurarFiltroAntiguedad() {
+    if (!elFiltroAntiguedad) {
+      return;
+    }
+    elFiltroAntiguedad.addEventListener('change', manejarCambioAntiguedad);
+  }
+
   function cargarCategorias() {
     if (!elListaCategorias) {
       return;
@@ -384,7 +429,7 @@
     imagenWrap.className = 'tarjeta-imagen-wrap';
     var img = document.createElement('img');
     img.className = 'tarjeta-imagen';
-    establecerImagenConFallback(img, noticia.imagen_url, 'Imagen de portada: ' + noticia.titulo);
+    establecerImagenConFallback(img, noticia.imagen_url, 'Imagen de portada: ' + noticia.titulo, articulo);
     imagenWrap.appendChild(img);
 
     if (esDestacada) {
@@ -629,12 +674,18 @@
       var paramsBusqueda = new URLSearchParams();
       paramsBusqueda.set('q', estado.query);
       paramsBusqueda.set('pagina', String(estado.pagina));
+      if (estado.periodo) {
+        paramsBusqueda.set('periodo', estado.periodo);
+      }
       promesa = obtenerJSON('/api/buscar?' + paramsBusqueda.toString());
     } else {
       var paramsListado = new URLSearchParams();
       paramsListado.set('pagina', String(estado.pagina));
       if (estado.categoria) {
         paramsListado.set('categoria', estado.categoria);
+      }
+      if (estado.periodo) {
+        paramsListado.set('periodo', estado.periodo);
       }
       promesa = obtenerJSON('/api/noticias?' + paramsListado.toString());
     }
@@ -738,14 +789,18 @@
       elListaUltimas.appendChild(li);
     }
 
-    // Respeta la sección activa: si hay una categoría elegida, el "Últimas
-    // noticias" de la barra lateral muestra las últimas de esa sección, no
-    // las últimas de todo el portal (mismo criterio que la grilla principal).
+    // Respeta la sección y el período activos: si hay una categoría o un
+    // filtro de antigüedad elegidos, el "Últimas noticias" de la barra
+    // lateral muestra las últimas de ese recorte, no las últimas de todo
+    // el portal (mismo criterio que la grilla principal).
     var paramsUltimas = new URLSearchParams();
     paramsUltimas.set('pagina', '1');
     paramsUltimas.set('limite', '10');
     if (estado.modo === 'listado' && estado.categoria) {
       paramsUltimas.set('categoria', estado.categoria);
+    }
+    if (estado.periodo) {
+      paramsUltimas.set('periodo', estado.periodo);
     }
 
     obtenerJSON('/api/noticias?' + paramsUltimas.toString())
@@ -841,7 +896,7 @@
     etiqueta.textContent = 'Publicidad';
 
     var img = document.createElement('img');
-    establecerImagenConFallback(img, publicidad.imagen_url, 'Publicidad: ' + publicidad.nombre);
+    establecerImagenConFallback(img, publicidad.imagen_url, 'Publicidad: ' + publicidad.nombre, enlace);
 
     enlace.appendChild(etiqueta);
     enlace.appendChild(img);
@@ -934,10 +989,14 @@
       clearTimeout(temporizadorBusqueda);
       estado.modo = 'listado';
       estado.categoria = '';
+      estado.periodo = '';
       estado.query = '';
       estado.pagina = 1;
       if (elInputBusqueda) {
         elInputBusqueda.value = '';
+      }
+      if (elFiltroAntiguedad) {
+        elFiltroAntiguedad.value = '';
       }
       marcarCategoriaActiva('');
       cargarNoticias();
@@ -968,6 +1027,7 @@
 
     configurarBusqueda();
     configurarLogo();
+    configurarFiltroAntiguedad();
     configurarSuscripcion();
   }
 
